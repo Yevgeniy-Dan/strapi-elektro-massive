@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_filters",
+  "info": {
+    "singularName": "product-filter",
+    "pluralName": "product-filters",
+    "displayName": "ProductFilter",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "alternative_titles": {
+      "displayName": "FilterAlternativeTitles",
+      "type": "component",
+      "repeatable": true,
+      "component": "alternative-titles.filter-alternative-titles"
+    },
+    "values": {
+      "displayName": "FilterValues",
+      "type": "component",
+      "repeatable": true,
+      "component": "filter-value.filter-values"
+    }
+  }
+}

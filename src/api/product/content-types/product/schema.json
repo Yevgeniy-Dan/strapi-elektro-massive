@@ -4,37 +4,56 @@
   "info": {
     "singularName": "product",
     "pluralName": "products",
-    "displayName": "Product"
+    "displayName": "Product",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
-    "name": {
+    "title": {
       "type": "string",
       "required": true,
       "unique": true
     },
-    "vendor_code": {
+    "part_number": {
       "type": "string",
       "required": true
     },
-    "photo": {
-      "allowedTypes": [
-        "images"
-      ],
-      "type": "media",
-      "multiple": true
-    },
-    "price": {
+    "retail": {
       "type": "decimal",
       "required": true
     },
-    "category": {
+    "image_link": {
+      "type": "string"
+    },
+    "params": {
+      "displayName": "parameters",
+      "type": "component",
+      "repeatable": true,
+      "component": "product-parameter.parameters"
+    },
+    "currency": {
+      "type": "string",
+      "required": true
+    },
+    "additional_images": {
+      "displayName": "Images",
+      "type": "component",
+      "repeatable": true,
+      "component": "images.images"
+    },
+    "product_types": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product-type.product-type",
+      "mappedBy": "products"
+    },
+    "subcategory": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::category.category",
+      "target": "api::subcategory.subcategory",
       "inversedBy": "products"
     }
   }

@@ -19,11 +19,19 @@
       "minLength": 1,
       "unique": true
     },
-    "products": {
+    "subcategories": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::product.product",
+      "target": "api::subcategory.subcategory",
       "mappedBy": "category"
+    },
+    "icon": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": false
     }
   }
 }
