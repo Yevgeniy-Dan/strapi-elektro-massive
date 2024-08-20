@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_filters_fitlers",
+  "info": {
+    "displayName": "Fitlers",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "product_type": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product-type.product-type"
+    },
+    "values": {
+      "type": "json"
+    }
+  }
+}

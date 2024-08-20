@@ -23,11 +23,11 @@
       "repeatable": true,
       "component": "alternative-titles.filter-alternative-titles"
     },
-    "values": {
-      "displayName": "FilterValues",
+    "filters": {
+      "displayName": "Fitlers",
       "type": "component",
       "repeatable": true,
-      "component": "filter-value.filter-values"
+      "component": "filters.fitlers"
     }
   }
 }
