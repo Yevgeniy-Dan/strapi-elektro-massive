@@ -44,9 +44,10 @@ export interface AlternativeTitlesFilterAlternativeTitles
   collectionName: 'components_alternative_titles_filter_alternative_titles';
   info: {
     displayName: 'FilterAlternativeTitles';
+    description: '';
   };
   attributes: {
-    title: Attribute.String & Attribute.Unique;
+    title: Attribute.String;
   };
 }
 

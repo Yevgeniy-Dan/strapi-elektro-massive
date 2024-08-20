@@ -1,13 +1,14 @@
 {
   "collectionName": "components_alternative_titles_filter_alternative_titles",
   "info": {
-    "displayName": "FilterAlternativeTitles"
+    "displayName": "FilterAlternativeTitles",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "title": {
       "type": "string",
-      "unique": true
+      "unique": false
     }
   }
 }
