@@ -19,7 +19,7 @@ export interface ImagesImages extends Schema.Component {
     description: '';
   };
   attributes: {
-    link: Attribute.String;
+    link: Attribute.Text;
   };
 }
 

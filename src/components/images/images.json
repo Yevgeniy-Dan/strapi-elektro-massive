@@ -7,7 +7,7 @@
   "options": {},
   "attributes": {
     "link": {
-      "type": "string",
+      "type": "text",
       "required": false
     }
   }
