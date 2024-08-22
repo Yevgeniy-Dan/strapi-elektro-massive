@@ -895,7 +895,7 @@ export interface ApiProductFilterProductFilter extends Schema.CollectionType {
       'alternative-titles.filter-alternative-titles',
       true
     >;
-    filters: Attribute.Component<'filters.fitlers', true>;
+    filters: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

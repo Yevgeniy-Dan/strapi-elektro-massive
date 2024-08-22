@@ -24,10 +24,7 @@
       "component": "alternative-titles.filter-alternative-titles"
     },
     "filters": {
-      "displayName": "Fitlers",
-      "type": "component",
-      "repeatable": true,
-      "component": "filters.fitlers"
+      "type": "json"
     }
   }
 }
