@@ -23,22 +23,6 @@ export interface ImagesImages extends Schema.Component {
   };
 }
 
-export interface FiltersFitlers extends Schema.Component {
-  collectionName: 'components_filters_fitlers';
-  info: {
-    displayName: 'Fitlers';
-    description: '';
-  };
-  attributes: {
-    product_type: Attribute.Relation<
-      'filters.fitlers',
-      'oneToOne',
-      'api::product-type.product-type'
-    >;
-    values: Attribute.JSON;
-  };
-}
-
 export interface AlternativeTitlesFilterAlternativeTitles
   extends Schema.Component {
   collectionName: 'components_alternative_titles_filter_alternative_titles';
@@ -56,7 +40,6 @@ declare module '@strapi/types' {
     export interface Components {
       'product-parameter.parameters': ProductParameterParameters;
       'images.images': ImagesImages;
-      'filters.fitlers': FiltersFitlers;
       'alternative-titles.filter-alternative-titles': AlternativeTitlesFilterAlternativeTitles;
     }
   }
