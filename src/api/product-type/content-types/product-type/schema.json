@@ -33,6 +33,14 @@
       "type": "string",
       "required": true,
       "unique": true
+    },
+    "icon": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": true
     }
   }
 }

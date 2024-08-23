@@ -939,6 +939,7 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
       'api::subcategory.subcategory'
     >;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
+    icon: Attribute.Media<'images'> & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
