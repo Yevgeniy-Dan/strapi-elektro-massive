@@ -4,7 +4,8 @@
   "info": {
     "singularName": "product-type",
     "pluralName": "product-types",
-    "displayName": "ProductType"
+    "displayName": "ProductType",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -21,6 +22,17 @@
       "relation": "manyToMany",
       "target": "api::product.product",
       "inversedBy": "product_types"
+    },
+    "subcategory": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subcategory.subcategory",
+      "inversedBy": "product_types"
+    },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
     }
   }
 }

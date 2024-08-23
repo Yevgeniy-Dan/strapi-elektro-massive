@@ -23,6 +23,21 @@ export interface ImagesImages extends Schema.Component {
   };
 }
 
+export interface FilterValuesTypevalues extends Schema.Component {
+  collectionName: 'components_filter_values_typevalues';
+  info: {
+    displayName: 'typevalues';
+  };
+  attributes: {
+    product_type: Attribute.Relation<
+      'filter-values.typevalues',
+      'oneToOne',
+      'api::product-type.product-type'
+    >;
+    values: Attribute.JSON & Attribute.Required;
+  };
+}
+
 export interface AlternativeTitlesFilterAlternativeTitles
   extends Schema.Component {
   collectionName: 'components_alternative_titles_filter_alternative_titles';
@@ -40,6 +55,7 @@ declare module '@strapi/types' {
     export interface Components {
       'product-parameter.parameters': ProductParameterParameters;
       'images.images': ImagesImages;
+      'filter-values.typevalues': FilterValuesTypevalues;
       'alternative-titles.filter-alternative-titles': AlternativeTitlesFilterAlternativeTitles;
     }
   }

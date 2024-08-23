@@ -23,8 +23,11 @@
       "repeatable": true,
       "component": "alternative-titles.filter-alternative-titles"
     },
-    "filters": {
-      "type": "json"
+    "FilterValues": {
+      "displayName": "typevalues",
+      "type": "component",
+      "repeatable": true,
+      "component": "filter-values.typevalues"
     }
   }
 }

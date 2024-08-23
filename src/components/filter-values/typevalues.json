@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_filter_values_typevalues",
+  "info": {
+    "displayName": "typevalues"
+  },
+  "options": {},
+  "attributes": {
+    "product_type": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product-type.product-type"
+    },
+    "values": {
+      "type": "json",
+      "required": true
+    }
+  }
+}

@@ -31,10 +31,15 @@
       "required": true,
       "unique": true
     },
-    "products": {
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "product_types": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::product.product",
+      "target": "api::product-type.product-type",
       "mappedBy": "subcategory"
     }
   }

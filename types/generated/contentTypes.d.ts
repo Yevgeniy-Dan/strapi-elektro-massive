@@ -813,6 +813,7 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       'api::subcategory.subcategory'
     >;
     icon: Attribute.Media<'images'>;
+    slug: Attribute.String & Attribute.Required & Attribute.Unique;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -857,7 +858,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
     >;
     subcategory: Attribute.Relation<
       'api::product.product',
-      'manyToOne',
+      'oneToOne',
       'api::subcategory.subcategory'
     >;
     createdAt: Attribute.DateTime;
@@ -895,7 +896,7 @@ export interface ApiProductFilterProductFilter extends Schema.CollectionType {
       'alternative-titles.filter-alternative-titles',
       true
     >;
-    filters: Attribute.JSON;
+    FilterValues: Attribute.Component<'filter-values.typevalues', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -920,6 +921,7 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
     singularName: 'product-type';
     pluralName: 'product-types';
     displayName: 'ProductType';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -931,6 +933,12 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
       'manyToMany',
       'api::product.product'
     >;
+    subcategory: Attribute.Relation<
+      'api::product-type.product-type',
+      'manyToOne',
+      'api::subcategory.subcategory'
+    >;
+    slug: Attribute.String & Attribute.Required & Attribute.Unique;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -968,10 +976,11 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
     >;
     icon: Attribute.Media<'images'>;
     title: Attribute.String & Attribute.Required & Attribute.Unique;
-    products: Attribute.Relation<
+    slug: Attribute.String & Attribute.Required & Attribute.Unique;
+    product_types: Attribute.Relation<
       'api::subcategory.subcategory',
       'oneToMany',
-      'api::product.product'
+      'api::product-type.product-type'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
