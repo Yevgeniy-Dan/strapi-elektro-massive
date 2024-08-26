@@ -27,6 +27,7 @@ export interface FilterValuesTypevalues extends Schema.Component {
   collectionName: 'components_filter_values_typevalues';
   info: {
     displayName: 'typevalues';
+    description: '';
   };
   attributes: {
     product_type: Attribute.Relation<
@@ -34,7 +35,7 @@ export interface FilterValuesTypevalues extends Schema.Component {
       'oneToOne',
       'api::product-type.product-type'
     >;
-    values: Attribute.JSON & Attribute.Required;
+    values: Attribute.JSON;
   };
 }
 

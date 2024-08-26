@@ -879,42 +879,6 @@ export interface ApiProductProduct extends Schema.CollectionType {
   };
 }
 
-export interface ApiProductFilterProductFilter extends Schema.CollectionType {
-  collectionName: 'product_filters';
-  info: {
-    singularName: 'product-filter';
-    pluralName: 'product-filters';
-    displayName: 'ProductFilter';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    title: Attribute.String & Attribute.Required;
-    alternative_titles: Attribute.Component<
-      'alternative-titles.filter-alternative-titles',
-      true
-    >;
-    FilterValues: Attribute.Component<'filter-values.typevalues', true>;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::product-filter.product-filter',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::product-filter.product-filter',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface ApiProductTypeProductType extends Schema.CollectionType {
   collectionName: 'product_types';
   info: {
@@ -1021,7 +985,6 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::category.category': ApiCategoryCategory;
       'api::product.product': ApiProductProduct;
-      'api::product-filter.product-filter': ApiProductFilterProductFilter;
       'api::product-type.product-type': ApiProductTypeProductType;
       'api::subcategory.subcategory': ApiSubcategorySubcategory;
     }
