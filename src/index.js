@@ -51,7 +51,13 @@ module.exports = {
                       );
 
                       const products = await productService.find({
-                        filters: { product_type: id },
+                        filters: {
+                          product_types: {
+                            id: {
+                              $in: [id],
+                            },
+                          },
+                        },
                         populate: {
                           params: {
                             fields: ["key", "value"],
@@ -110,7 +116,11 @@ module.exports = {
 
                     const query = {
                       filters: {
-                        product_type: productTypeId,
+                        product_types: {
+                          id: {
+                            $in: [productTypeId],
+                          },
+                        },
                         $or: Object.entries(filters).map(([key, value]) => ({
                           params: {
                             $and: [{ key: key }, { value: value }],
@@ -122,13 +132,6 @@ module.exports = {
                           fields: ["key", "value"],
                         },
                       },
-                      fields: [
-                        "id",
-                        "title",
-                        "retail",
-                        "currency",
-                        "image_link",
-                      ],
                       pagination: {
                         limit: -1, // Fetch all matching products //TODO: make paginated query
                       },
