@@ -23,6 +23,13 @@ module.exports = {
         return {
           types: [
             nexus.extendType({
+              type: "Product",
+              definition(t) {
+                // Add any fields that might be missing from the original Product type
+                t.nonNull.id("id");
+              },
+            }),
+            nexus.extendType({
               type: "Query",
               definition(t) {
                 t.field("productTypeFilters", {
@@ -36,6 +43,8 @@ module.exports = {
                       await strapi.auth.verify(ctx.state.auth, {
                         scope: ["api::product.product.find"],
                       });
+
+                      //TODO: refactore the code to fetch only neccessary filters
 
                       const productService = strapi.service(
                         "api::product.product"
@@ -113,6 +122,13 @@ module.exports = {
                           fields: ["key", "value"],
                         },
                       },
+                      fields: [
+                        "id",
+                        "title",
+                        "retail",
+                        "currency",
+                        "image_link",
+                      ],
                       pagination: {
                         limit: -1, // Fetch all matching products //TODO: make paginated query
                       },
@@ -121,7 +137,10 @@ module.exports = {
                     const result = await productService.find(query);
 
                     logToFile(
-                      `Filtered products found: ${result.results.length}`
+                      `Filtered products found: ${JSON.stringify(
+                        result.results
+                      )})
+                      )}`
                     );
 
                     return result.results;
