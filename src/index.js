@@ -29,6 +29,13 @@ module.exports = {
                 t.nonNull.id("id");
               },
             }),
+            nexus.inputObjectType({
+              name: "FilterInput",
+              definition(t) {
+                t.nonNull.string("key");
+                t.nonNull.string("value");
+              },
+            }),
             nexus.extendType({
               type: "Query",
               definition(t) {
@@ -102,7 +109,9 @@ module.exports = {
                   type: "Product",
                   args: {
                     productTypeId: nexus.idArg(),
-                    filters: nexus.arg({ type: "JSON" }),
+                    filters: nexus.arg({
+                      type: nexus.list(nexus.nonNull("FilterInput")),
+                    }),
                   },
                   resolve: async (_, { productTypeId, filters }, ctx) => {
                     // Check API token permissions
@@ -121,7 +130,7 @@ module.exports = {
                             $in: [productTypeId],
                           },
                         },
-                        $or: Object.entries(filters).map(([key, value]) => ({
+                        $or: filters.map(({ key, value }) => ({
                           params: {
                             $and: [{ key: key }, { value: value }],
                           },
