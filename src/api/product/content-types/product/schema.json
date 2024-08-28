@@ -28,12 +28,6 @@
     "image_link": {
       "type": "string"
     },
-    "params": {
-      "displayName": "parameters",
-      "type": "component",
-      "repeatable": true,
-      "component": "product-parameter.parameters"
-    },
     "currency": {
       "type": "string",
       "required": true
@@ -54,6 +48,9 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::subcategory.subcategory"
+    },
+    "params": {
+      "type": "json"
     }
   }
 }

@@ -848,7 +848,6 @@ export interface ApiProductProduct extends Schema.CollectionType {
     part_number: Attribute.String & Attribute.Required;
     retail: Attribute.Decimal & Attribute.Required;
     image_link: Attribute.String;
-    params: Attribute.Component<'product-parameter.parameters', true>;
     currency: Attribute.String & Attribute.Required;
     additional_images: Attribute.Component<'images.images', true>;
     product_types: Attribute.Relation<
@@ -861,6 +860,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'oneToOne',
       'api::subcategory.subcategory'
     >;
+    params: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -29,6 +29,16 @@ module.exports = {
                 t.nonNull.id("id");
               },
             }),
+            nexus.objectType({
+              name: "ProductListResult",
+              definition(t) {
+                t.nonNull.list.nonNull.field("products", { type: "Product" });
+                t.nonNull.int("currentPage");
+                t.nonNull.int("pageCount");
+                t.nonNull.int("totalCount");
+                t.string("nextCursor");
+              },
+            }),
             nexus.inputObjectType({
               name: "FilterInput",
               definition(t) {
@@ -43,15 +53,13 @@ module.exports = {
                   type: "JSON",
                   args: { id: nexus.idArg() },
                   resolve: async (_, { id }, ctx) => {
-                    logToFile(`productTypeFilters called with id: ${id}`);
+                    // logToFile(`productTypeFilters called with id: ${id}`);
 
                     try {
                       // Check API token permissions
                       await strapi.auth.verify(ctx.state.auth, {
                         scope: ["api::product.product.find"],
                       });
-
-                      //TODO: refactore the code to fetch only neccessary filters
 
                       const productService = strapi.service(
                         "api::product.product"
@@ -75,25 +83,39 @@ module.exports = {
                         },
                       });
 
-                      logToFile(
-                        `products: ${JSON.stringify(products.results.length)}`
-                      );
+                      const allowedFilterKeys = [
+                        "Бренд",
+                        "Гарантія",
+                        "Колірна температура",
+                        "Кут розсіювання",
+                        "Напруга V",
+                        "Особливості",
+                        "Потужність",
+                        "Світловий потік Lm",
+                        "Тип цоколя",
+                        "Форма лампи",
+                      ];
+
                       const filters = {};
                       products.results.forEach((product) => {
-                        product.params.forEach((param) => {
-                          if (!filters[param.key]) {
-                            filters[param.key] = new Set();
+                        Object.entries(product.params).forEach(
+                          ([key, value]) => {
+                            if (allowedFilterKeys.includes(key)) {
+                              if (!filters[key]) {
+                                filters[key] = new Set();
+                              }
+                              filters[key].add(value);
+                            }
                           }
-                          filters[param.key].add(param.value);
-                        });
+                        );
                       });
                       Object.keys(filters).forEach((key) => {
                         filters[key] = Array.from(filters[key]);
                       });
 
-                      logToFile(
-                        `Generated filters: ${JSON.stringify(filters)}`
-                      );
+                      // logToFile(
+                      //   `Generated filters: ${JSON.stringify(filters)}`
+                      // );
 
                       return filters;
                     } catch (error) {
@@ -105,57 +127,103 @@ module.exports = {
                   },
                 });
 
-                t.list.field("filteredProducts", {
-                  type: "Product",
+                t.field("filteredProducts", {
+                  type: "ProductListResult",
                   args: {
-                    productTypeId: nexus.idArg(),
+                    productTypeId: nexus.nonNull(nexus.idArg()),
                     filters: nexus.arg({
                       type: nexus.list(nexus.nonNull("FilterInput")),
                     }),
+                    cursor: nexus.stringArg(),
+                    page: nexus.intArg(),
+                    pageSize: nexus.intArg({
+                      defaultValue: 25,
+                    }),
                   },
-                  resolve: async (_, { productTypeId, filters }, ctx) => {
+                  resolve: async (_, args, ctx) => {
+                    const {
+                      productTypeId,
+                      filters,
+                      cursor,
+                      page,
+                      pageSize = 25,
+                    } = args;
+
                     // Check API token permissions
                     await strapi.auth.verify(ctx.state.auth, {
                       scope: ["api::product.product.find"],
                     });
 
-                    const productService = strapi.service(
-                      "api::product.product"
+                    const knex = strapi.db.connection;
+
+                    let query = knex("products")
+                      .join(
+                        "product_types_products_links",
+                        "products.id",
+                        "product_types_products_links.product_id"
+                      )
+                      .where(
+                        "product_types_products_links.product_type_id",
+                        productTypeId
+                      );
+
+                    if (filters && filters.length > 0) {
+                      query = query.andWhere(function () {
+                        filters.forEach(({ key, value }) => {
+                          this.orWhereRaw(
+                            "params @> ?::jsonb",
+                            JSON.stringify({ [key]: value })
+                          );
+                        });
+                      });
+                    }
+
+                    const countResult = await query
+                      .clone()
+                      .countDistinct("products.id as count")
+                      .first();
+                    const totalCount = parseInt(countResult.count); //TODO: if will be large dataset it should be Materialized Views
+
+                    if (cursor) {
+                      query = query.where("products.id", ">", cursor);
+                    } else if (page) {
+                      const offset = (page - 1) * pageSize;
+                      query = query.offset(offset);
+                    }
+
+                    const results = await query
+                      .select("products.*")
+                      .orderBy("products.id", "asc")
+                      .limit(pageSize + 1);
+
+                    const hasNextPage = results.length > pageSize;
+                    const paginatedResults = results.slice(0, pageSize);
+
+                    const nextCursor = hasNextPage
+                      ? paginatedResults[
+                          paginatedResults.length - 1
+                        ].id.toString()
+                      : null;
+
+                    const currentPage =
+                      page ||
+                      (cursor
+                        ? Math.floor(paginatedResults[0].id / pageSize) + 1
+                        : 1);
+
+                    const pageCount = Math.ceil(totalCount / pageSize);
+
+                    console.log(
+                      `Filtered products found: ${results.length}, Total: ${totalCount}, PageSize: ${pageSize}`
                     );
 
-                    const query = {
-                      filters: {
-                        product_types: {
-                          id: {
-                            $in: [productTypeId],
-                          },
-                        },
-                        $or: filters.map(({ key, value }) => ({
-                          params: {
-                            $and: [{ key: key }, { value: value }],
-                          },
-                        })),
-                      },
-                      populate: {
-                        params: {
-                          fields: ["key", "value"],
-                        },
-                      },
-                      pagination: {
-                        limit: -1, // Fetch all matching products //TODO: make paginated query
-                      },
+                    return {
+                      products: paginatedResults,
+                      currentPage,
+                      pageCount,
+                      totalCount,
+                      nextCursor,
                     };
-
-                    const result = await productService.find(query);
-
-                    logToFile(
-                      `Filtered products found: ${JSON.stringify(
-                        result.results
-                      )})
-                      )}`
-                    );
-
-                    return result.results;
                   },
                 });
               },
@@ -185,7 +253,36 @@ module.exports = {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap({ strapi }) {
-    logToFile("Custom logging initialized");
+  bootstrap: async ({ strapi }) => {
+    const knex = strapi.db.connection;
+    // Check if the index already exists
+    const indexExists = await knex.raw(`
+      SELECT 1
+      FROM pg_indexes
+      WHERE indexname = 'idx_products_params'
+    `);
+    if (indexExists.rows.length === 0) {
+      // Create the index if it doesn't exist
+      await knex.raw(
+        "CREATE INDEX idx_products_params ON products USING GIN (params jsonb_path_ops)"
+      );
+      logToFile("GIN index created on products.params");
+    } else {
+      logToFile("GIN index already exists on products.params");
+    }
+
+    // Check if the index on products.id already exists
+    const idIndexExists = await knex.raw(`
+    SELECT 1
+    FROM pg_indexes
+    WHERE indexname = 'idx_products_id'
+  `);
+    if (idIndexExists.rows.length === 0) {
+      // Create the index if it doesn't exist
+      await knex.raw("CREATE INDEX idx_products_id ON products (id)");
+      console.log("Index created on products.id");
+    } else {
+      console.log("Index already exists on products.id");
+    }
   },
 };
