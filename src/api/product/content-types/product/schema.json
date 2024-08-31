@@ -51,6 +51,9 @@
     },
     "params": {
       "type": "json"
+    },
+    "description": {
+      "type": "richtext"
     }
   }
 }

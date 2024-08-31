@@ -861,6 +861,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'api::subcategory.subcategory'
     >;
     params: Attribute.JSON;
+    description: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
