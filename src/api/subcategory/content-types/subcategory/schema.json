@@ -38,9 +38,9 @@
     },
     "product_types": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::product-type.product-type",
-      "mappedBy": "subcategory"
+      "mappedBy": "subcategories"
     }
   }
 }

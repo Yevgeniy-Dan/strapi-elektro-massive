@@ -898,9 +898,9 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
       'manyToMany',
       'api::product.product'
     >;
-    subcategory: Attribute.Relation<
+    subcategories: Attribute.Relation<
       'api::product-type.product-type',
-      'manyToOne',
+      'manyToMany',
       'api::subcategory.subcategory'
     >;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
@@ -945,7 +945,7 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
     product_types: Attribute.Relation<
       'api::subcategory.subcategory',
-      'oneToMany',
+      'manyToMany',
       'api::product-type.product-type'
     >;
     createdAt: Attribute.DateTime;

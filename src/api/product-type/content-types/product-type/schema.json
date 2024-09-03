@@ -23,9 +23,9 @@
       "target": "api::product.product",
       "inversedBy": "product_types"
     },
-    "subcategory": {
+    "subcategories": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::subcategory.subcategory",
       "inversedBy": "product_types"
     },
@@ -35,12 +35,12 @@
       "unique": true
     },
     "icon": {
-      "allowedTypes": [
-        "images"
-      ],
       "type": "media",
       "multiple": false,
-      "required": true
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }
