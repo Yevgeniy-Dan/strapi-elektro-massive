@@ -814,6 +814,7 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
     >;
     icon: Attribute.Media<'images'>;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
+    image: Attribute.Media<'images'> & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
