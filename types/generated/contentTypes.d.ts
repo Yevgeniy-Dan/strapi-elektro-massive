@@ -863,6 +863,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
     >;
     params: Attribute.JSON;
     description: Attribute.RichText;
+    discount: Attribute.Decimal;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
