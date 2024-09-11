@@ -57,6 +57,12 @@
     },
     "discount": {
       "type": "decimal"
+    },
+    "cart_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart-item.cart-item",
+      "mappedBy": "product"
     }
   }
 }
