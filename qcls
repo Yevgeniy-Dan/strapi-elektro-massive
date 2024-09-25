@@ -1,0 +1,30 @@
+[33m4c7066c[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m implement the cart and cartitems
+[33m8e69dcf[m add discount field to the product
+[33m9c7563b[m add iamge field to category
+[33m9d715cd[m change the product type collection to apply productTypes to subcategories many-to-many relation
+[33m0091d56[m add description field to product colelction
+[33m048c948[m change params to json type in Product and change return object type from filteredProducts
+[33m06f7766[m changing the filter input
+[33m3087f69[m fix queries params
+[33mce4422f[m adding the id field tp Product definition getting filtered product
+[33mfa6dc4a[m remove ProductFilter collection and adding register function for productTypeFilters and filteredProducts
+[33mdaf3c16[m adding icon to product type
+[33m579d2a3[m refactoring the collections to use slug field and changing filters in ProductFilters to FilterValues component
+[33md22d4a6[m removeing the Filter component
+[33m82564c3[m changing filters field type
+[33m578ec44[m change the product filter alternative title to no an unique
+[33mb00b111[m add filters field to ProductFilter collection with relation to product type
+[33m0ab0fe4[m made available graphql playground in production
+[33md147924[m change link field in additional_images component to long text
+[33mec34fe3[m change link filed in additional_images field of product from short to long text type
+[33maa9d26a[m Merge branch 'master' of https://github.com/Yevgeniy-Dan/strapi-elektro-massive
+[33m97c6348[m create productFilter productType and subcategory collections
+[33maaf4058[m Setting up a project to a domain name
+[33m3c99f4f[m Resolved merge conflict in config/server.js
+[33mbd5b668[m merge confilts
+[33m48d1425[m change public url
+[33m3ddebe7[m add public url to server
+[33mefae4a3[m add public url to server
+[33mc0482b9[m config
+[33mff84e4e[m add category and product entities
+[33m153c813[m get started
