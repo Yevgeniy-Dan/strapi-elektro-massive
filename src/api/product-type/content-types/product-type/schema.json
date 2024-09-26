@@ -41,6 +41,9 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "description": {
+      "type": "richtext"
     }
   }
 }

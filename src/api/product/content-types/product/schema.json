@@ -63,6 +63,11 @@
       "relation": "oneToMany",
       "target": "api::cart-item.cart-item",
       "mappedBy": "product"
+    },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
     }
   }
 }

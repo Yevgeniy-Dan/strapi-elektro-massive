@@ -954,6 +954,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'oneToMany',
       'api::cart-item.cart-item'
     >;
+    slug: Attribute.String & Attribute.Required & Attribute.Unique;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -997,6 +998,7 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
     >;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
     icon: Attribute.Media<'images'> & Attribute.Required;
+    description: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

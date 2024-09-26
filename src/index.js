@@ -209,8 +209,23 @@ module.exports = {
                           }
                         );
                       });
+
+                      const sortMixedValues = (arr) => {
+                        return arr.sort((a, b) => {
+                          const numA = parseFloat(a.match(/^-?\d+\.?\d*/));
+                          const numB = parseFloat(b.match(/^-?\d+\.?\d*/));
+
+                          if (isNaN(numA)) return 1;
+                          if (isNaN(numB)) return -1;
+
+                          return numA - numB;
+                        });
+                      };
+
                       Object.keys(filters).forEach((key) => {
-                        filters[key] = Array.from(filters[key]);
+                        filters[key] = sortMixedValues(
+                          Array.from(filters[key])
+                        );
                       });
 
                       // logToFile(
