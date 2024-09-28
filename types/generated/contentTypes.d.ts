@@ -955,6 +955,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'api::cart-item.cart-item'
     >;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
+    keywords: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

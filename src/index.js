@@ -27,6 +27,7 @@ module.exports = {
               definition(t) {
                 // Add any fields that might be missing from the original Product type
                 t.nonNull.id("id");
+                t.nonNull.string("slug");
               },
             }),
 
