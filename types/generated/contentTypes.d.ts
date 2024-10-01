@@ -729,6 +729,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::cart.cart'
     >;
+    orders: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::order.order'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -918,6 +923,57 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
   };
 }
 
+export interface ApiOrderOrder extends Schema.CollectionType {
+  collectionName: 'orders';
+  info: {
+    singularName: 'order';
+    pluralName: 'orders';
+    displayName: 'Order';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    orderNumber: Attribute.String & Attribute.Required & Attribute.Unique;
+    orderDate: Attribute.DateTime & Attribute.Required;
+    firstName: Attribute.String & Attribute.Required;
+    secondName: Attribute.String & Attribute.Required;
+    lastName: Attribute.String & Attribute.Required;
+    phoneNumber: Attribute.String & Attribute.Required;
+    totalAmount: Attribute.Decimal & Attribute.Required;
+    shippingAddress: Attribute.String;
+    status: Attribute.Enumeration<
+      ['pending', 'processing', 'delivered', 'cancelled']
+    > &
+      Attribute.DefaultTo<'pending'>;
+    orderItems: Attribute.JSON & Attribute.Required;
+    users_permissions_user: Attribute.Relation<
+      'api::order.order',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    paymentMethod: Attribute.Enumeration<['card', 'cash']> & Attribute.Required;
+    deliveryMethod: Attribute.Enumeration<['novaPoshta', 'selfPickup']> &
+      Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::order.order',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::order.order',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiProductProduct extends Schema.CollectionType {
   collectionName: 'products';
   info: {
@@ -1082,6 +1138,7 @@ declare module '@strapi/types' {
       'api::cart.cart': ApiCartCart;
       'api::cart-item.cart-item': ApiCartItemCartItem;
       'api::category.category': ApiCategoryCategory;
+      'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::product-type.product-type': ApiProductTypeProductType;
       'api::subcategory.subcategory': ApiSubcategorySubcategory;
