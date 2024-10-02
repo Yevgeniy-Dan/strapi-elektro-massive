@@ -146,7 +146,7 @@ module.exports = {
                   type: "JSON",
                   args: {
                     productTypeId: nexus.idArg(),
-                    subcategoryId: nexus.idArg(),
+                    subcategoryId: nexus.nonNull(nexus.idArg()),
                   },
                   resolve: async (_, { productTypeId, subcategoryId }, ctx) => {
                     // logToFile(`productTypeFilters called with id: ${id}`);
@@ -161,19 +161,24 @@ module.exports = {
                         "api::product.product"
                       );
 
-                      const products = await productService.find({
-                        filters: {
-                          product_types: {
-                            id: {
-                              $in: [productTypeId],
-                            },
-                          },
-                          subcategory: {
-                            id: {
-                              $eq: subcategoryId,
-                            },
+                      const queryFilters = {
+                        subcategory: {
+                          id: {
+                            $eq: subcategoryId,
                           },
                         },
+                      };
+
+                      if (productTypeId) {
+                        queryFilters.product_types = {
+                          id: {
+                            $in: [productTypeId],
+                          },
+                        };
+                      }
+
+                      const products = await productService.find({
+                        filters: queryFilters,
                         populate: {
                           params: {
                             fields: ["key", "value"],
@@ -197,15 +202,15 @@ module.exports = {
                         "Форма лампи",
                       ];
 
-                      const filters = {};
+                      const resultFilters = {};
                       products.results.forEach((product) => {
                         Object.entries(product.params).forEach(
                           ([key, value]) => {
                             if (allowedFilterKeys.includes(key)) {
-                              if (!filters[key]) {
-                                filters[key] = new Set();
+                              if (!resultFilters[key]) {
+                                resultFilters[key] = new Set();
                               }
-                              filters[key].add(value);
+                              resultFilters[key].add(value);
                             }
                           }
                         );
@@ -223,17 +228,16 @@ module.exports = {
                         });
                       };
 
-                      Object.keys(filters).forEach((key) => {
-                        filters[key] = sortMixedValues(
-                          Array.from(filters[key])
+                      Object.keys(resultFilters).forEach((key) => {
+                        resultFilters[key] = sortMixedValues(
+                          Array.from(resultFilters[key])
                         );
                       });
 
                       // logToFile(
-                      //   `Generated filters: ${JSON.stringify(filters)}`
+                      //   `Generated filters: ${JSON.stringify(resultFilters)}`
                       // );
-
-                      return filters;
+                      return resultFilters;
                     } catch (error) {
                       logToFile(
                         `Error in productTypeFilters: ${error.message}`
@@ -246,7 +250,7 @@ module.exports = {
                 t.field("filteredProducts", {
                   type: "ProductListResult",
                   args: {
-                    productTypeId: nexus.nonNull(nexus.idArg()),
+                    productTypeId: nexus.idArg(),
                     subcategoryId: nexus.nonNull(nexus.idArg()),
                     filters: nexus.arg({
                       type: nexus.list(nexus.nonNull("FilterInput")),
@@ -276,23 +280,27 @@ module.exports = {
 
                     let query = knex("products")
                       .join(
-                        "product_types_products_links",
-                        "products.id",
-                        "product_types_products_links.product_id"
-                      )
-                      .join(
                         "products_subcategory_links",
                         "products.id",
                         "products_subcategory_links.product_id"
                       )
                       .where(
-                        "product_types_products_links.product_type_id",
-                        productTypeId
-                      )
-                      .andWhere(
                         "products_subcategory_links.subcategory_id",
                         subcategoryId
                       );
+
+                    if (productTypeId) {
+                      query = query
+                        .join(
+                          "product_types_products_links",
+                          "products.id",
+                          "product_types_products_links.product_id"
+                        )
+                        .where(
+                          "product_types_products_links.product_type_id",
+                          productTypeId
+                        );
+                    }
 
                     if (filters && filters.length > 0) {
                       query = query.andWhere(function () {

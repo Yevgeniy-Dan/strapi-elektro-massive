@@ -71,6 +71,12 @@
     },
     "keywords": {
       "type": "text"
+    },
+    "salesCount": {
+      "type": "integer",
+      "required": false,
+      "default": 0,
+      "unique": false
     }
   }
 }
