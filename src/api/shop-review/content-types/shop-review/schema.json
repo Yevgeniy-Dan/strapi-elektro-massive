@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "shop_reviews",
+  "info": {
+    "singularName": "shop-review",
+    "pluralName": "shop-reviews",
+    "displayName": "ShopReview"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "customerName": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "comment": {
+      "type": "text",
+      "required": true
+    },
+    "selectionConvenience": {
+      "type": "decimal",
+      "required": true,
+      "max": 5,
+      "min": 0
+    },
+    "managerConsultation": {
+      "type": "decimal",
+      "max": 5,
+      "min": 0,
+      "required": true
+    },
+    "productDelivery": {
+      "type": "decimal",
+      "max": 5,
+      "min": 0,
+      "required": true
+    },
+    "paymentProcess": {
+      "type": "decimal",
+      "required": true,
+      "max": 5,
+      "min": 0
+    },
+    "overallRating": {
+      "type": "decimal",
+      "required": true,
+      "max": 5,
+      "min": 0
+    }
+  }
+}

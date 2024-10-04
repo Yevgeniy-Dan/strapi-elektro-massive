@@ -1140,6 +1140,82 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
   };
 }
 
+export interface ApiShopReviewShopReview extends Schema.CollectionType {
+  collectionName: 'shop_reviews';
+  info: {
+    singularName: 'shop-review';
+    pluralName: 'shop-reviews';
+    displayName: 'ShopReview';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    customerName: Attribute.String & Attribute.Required;
+    comment: Attribute.Text & Attribute.Required;
+    selectionConvenience: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+          max: 5;
+        },
+        number
+      >;
+    managerConsultation: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+          max: 5;
+        },
+        number
+      >;
+    productDelivery: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+          max: 5;
+        },
+        number
+      >;
+    paymentProcess: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+          max: 5;
+        },
+        number
+      >;
+    overallRating: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+          max: 5;
+        },
+        number
+      >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::shop-review.shop-review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::shop-review.shop-review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiSubcategorySubcategory extends Schema.CollectionType {
   collectionName: 'subcategories';
   info: {
@@ -1209,6 +1285,7 @@ declare module '@strapi/types' {
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::product-type.product-type': ApiProductTypeProductType;
+      'api::shop-review.shop-review': ApiShopReviewShopReview;
       'api::subcategory.subcategory': ApiSubcategorySubcategory;
     }
   }
