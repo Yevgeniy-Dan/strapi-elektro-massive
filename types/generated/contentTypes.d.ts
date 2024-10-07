@@ -695,7 +695,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     username: Attribute.String &
@@ -733,6 +732,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'oneToMany',
       'api::order.order'
+    >;
+    favorite_products: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::favorite-product.favorite-product'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -988,6 +992,51 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
   };
 }
 
+export interface ApiFavoriteProductFavoriteProduct
+  extends Schema.CollectionType {
+  collectionName: 'favorite_products';
+  info: {
+    singularName: 'favorite-product';
+    pluralName: 'favorite-products';
+    displayName: 'FavoriteProduct';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    users_permissions_user: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    product: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'manyToOne',
+      'api::product.product'
+    >;
+    product_type: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'oneToOne',
+      'api::product-type.product-type'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiOrderOrder extends Schema.CollectionType {
   collectionName: 'orders';
   info: {
@@ -1078,6 +1127,11 @@ export interface ApiProductProduct extends Schema.CollectionType {
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
     keywords: Attribute.Text;
     salesCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    favorite_products: Attribute.Relation<
+      'api::product.product',
+      'oneToMany',
+      'api::favorite-product.favorite-product'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1282,6 +1336,7 @@ declare module '@strapi/types' {
       'api::cart.cart': ApiCartCart;
       'api::cart-item.cart-item': ApiCartItemCartItem;
       'api::category.category': ApiCategoryCategory;
+      'api::favorite-product.favorite-product': ApiFavoriteProductFavoriteProduct;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::product-type.product-type': ApiProductTypeProductType;

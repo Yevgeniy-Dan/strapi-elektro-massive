@@ -70,6 +70,27 @@ module.exports = {
               },
             }),
 
+            // nexus.objectType({
+            //   name: "FavoriteProduct",
+            //   definition(t) {
+            //     t.nonNull.id("id");
+            //     t.nonNull.field("product", { type: "Product" });
+            //     t.nonNull.field("product_type", { type: "ProductType" });
+            //     t.nonNull.field("users_permissions_user", {
+            //       type: "UsersPermissionsUser",
+            //     });
+            //   },
+            // }),
+
+            nexus.objectType({
+              name: "FavoriteProductResponse",
+              definition(t) {
+                t.nonNull.list.nonNull.field("favoriteProducts", {
+                  type: "FavoriteProduct",
+                });
+              },
+            }),
+
             nexus.inputObjectType({
               name: "SyncCartInput",
               definition(t) {
@@ -134,6 +155,21 @@ module.exports = {
 
             nexus.inputObjectType({
               name: "RemoveFromCartInput",
+              definition(t) {
+                t.nonNull.id("productId");
+              },
+            }),
+
+            nexus.inputObjectType({
+              name: "AddToFavoritesInput",
+              definition(t) {
+                t.nonNull.id("productId");
+                t.nonNull.id("productTypeId");
+              },
+            }),
+
+            nexus.inputObjectType({
+              name: "RemoveFromFavoritesInput",
               definition(t) {
                 t.nonNull.id("productId");
               },
@@ -355,6 +391,44 @@ module.exports = {
                       totalCount,
                       nextCursor,
                     };
+                  },
+                });
+              },
+            }),
+
+            nexus.extendType({
+              type: "Query",
+              definition(t) {
+                t.field("userFavorites", {
+                  type: "FavoriteProductResponse",
+                  resolve: async (_, __, ctx) => {
+                    const { state } = ctx;
+
+                    if (!state.isAuthenticated) {
+                      throw new Error(
+                        "You must be logged in to view your favorites"
+                      );
+                    }
+
+                    const { id: userId } = ctx.state.user;
+
+                    const favoriteProducts = await strapi.db
+                      .query("api::favorite-product.favorite-product")
+                      .findMany({
+                        where: { users_permissions_user: userId },
+                        populate: {
+                          product: {
+                            populate: ["image", "subcategory"],
+                          },
+                          product_type: true,
+                        },
+                      });
+
+                    if (!favoriteProducts) {
+                      return { favoriteProducts: [] };
+                    }
+
+                    return { favoriteProducts };
                   },
                 });
               },
@@ -762,6 +836,139 @@ module.exports = {
                       console.error("Error removing from cart:", error);
                       throw new Error(
                         "An error occurred while removing from the cart"
+                      );
+                    }
+                  },
+                });
+              },
+            }),
+            nexus.extendType({
+              type: "Mutation",
+              definition(t) {
+                t.field("addToFavorites", {
+                  type: "FavoriteProductResponse",
+                  args: {
+                    input: nexus.arg({
+                      type: nexus.nonNull("AddToFavoritesInput"),
+                    }),
+                  },
+                  resolve: async (_, { input }, ctx) => {
+                    const { state } = ctx;
+                    const { productId, productTypeId } = input;
+
+                    if (!state.isAuthenticated) {
+                      throw new Error(
+                        "You must be logged in to modify your favorites"
+                      );
+                    }
+
+                    const { id: userId } = ctx.state.user;
+
+                    try {
+                      const existingFavorite = await strapi.db
+                        .query("api::favorite-product.favorite-product")
+                        .findOne({
+                          where: {
+                            users_permissions_user: userId,
+                            product: productId,
+                          },
+                        });
+
+                      if (existingFavorite) {
+                        throw new Error(
+                          "This product is already in your favorites"
+                        );
+                      }
+
+                      await strapi.entityService.create(
+                        "api::favorite-product.favorite-product",
+                        {
+                          data: {
+                            product: productId,
+                            product_type: productTypeId,
+                            users_permissions_user: userId,
+                            publishedAt: new Date().toISOString(),
+                          },
+                        }
+                      );
+
+                      const updatedFavorites = await strapi.db
+                        .query("api::favorite-product.favorite-product")
+                        .findMany({
+                          where: { users_permissions_user: userId },
+                          populate: {
+                            product: {
+                              populate: ["image", "subcategory"],
+                            },
+                            product_type: true,
+                          },
+                        });
+
+                      return { favoriteProducts: updatedFavorites };
+                    } catch (error) {
+                      console.error("Error adding to favorites:", error);
+                      throw new Error(
+                        "An error occurred while adding to favorites"
+                      );
+                    }
+                  },
+                });
+
+                t.field("removeFromFavorites", {
+                  type: "FavoriteProductResponse",
+                  args: {
+                    input: nexus.arg({
+                      type: nexus.nonNull("RemoveFromFavoritesInput"),
+                    }),
+                  },
+                  resolve: async (_, { input }, ctx) => {
+                    const { state } = ctx;
+                    const { productId } = input;
+
+                    if (!state.isAuthenticated) {
+                      throw new Error(
+                        "You must be logged in to modify your favorites"
+                      );
+                    }
+
+                    const { id: userId } = ctx.state.user;
+
+                    try {
+                      const favoriteToRemove = await strapi.db
+                        .query("api::favorite-product.favorite-product")
+                        .findOne({
+                          where: {
+                            product: productId,
+                            users_permissions_user: userId,
+                          },
+                        });
+
+                      if (!favoriteToRemove) {
+                        throw new Error("Favorite product not found");
+                      }
+
+                      await strapi.entityService.delete(
+                        "api::favorite-product.favorite-product",
+                        favoriteToRemove.id
+                      );
+
+                      const updatedFavorites = await strapi.db
+                        .query("api::favorite-product.favorite-product")
+                        .findMany({
+                          where: { users_permissions_user: userId },
+                          populate: {
+                            product: {
+                              populate: ["image", "subcategory"],
+                            },
+                            product_type: true,
+                          },
+                        });
+
+                      return { favoriteProducts: updatedFavorites };
+                    } catch (error) {
+                      console.error("Error removing from favorites:", error);
+                      throw new Error(
+                        "An error occurred while removing from favorites"
                       );
                     }
                   },

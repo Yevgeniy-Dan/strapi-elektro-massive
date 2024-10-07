@@ -77,6 +77,12 @@
       "required": false,
       "default": 0,
       "unique": false
+    },
+    "favorite_products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::favorite-product.favorite-product",
+      "mappedBy": "product"
     }
   }
 }

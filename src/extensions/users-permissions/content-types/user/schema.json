@@ -9,8 +9,7 @@
     "displayName": "User"
   },
   "options": {
-    "draftAndPublish": false,
-    "timestamps": true
+    "draftAndPublish": false
   },
   "attributes": {
     "username": {
@@ -76,6 +75,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::order.order",
+      "mappedBy": "users_permissions_user"
+    },
+    "favorite_products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::favorite-product.favorite-product",
       "mappedBy": "users_permissions_user"
     }
   }
