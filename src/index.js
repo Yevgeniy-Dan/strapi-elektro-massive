@@ -70,18 +70,6 @@ module.exports = {
               },
             }),
 
-            // nexus.objectType({
-            //   name: "FavoriteProduct",
-            //   definition(t) {
-            //     t.nonNull.id("id");
-            //     t.nonNull.field("product", { type: "Product" });
-            //     t.nonNull.field("product_type", { type: "ProductType" });
-            //     t.nonNull.field("users_permissions_user", {
-            //       type: "UsersPermissionsUser",
-            //     });
-            //   },
-            // }),
-
             nexus.objectType({
               name: "FavoriteProductResponse",
               definition(t) {
@@ -149,7 +137,7 @@ module.exports = {
               name: "UpdateCartItemInput",
               definition(t) {
                 t.nonNull.id("productId");
-                t.nonNull.int("quantity");
+                t.nonNull.int("qtyChange");
               },
             }),
 
@@ -717,7 +705,7 @@ module.exports = {
                   },
                   resolve: async (_, { input }, ctx) => {
                     const { state } = ctx;
-                    const { productId, quantity } = input;
+                    const { productId, qtyChange } = input;
 
                     if (!state.isAuthenticated) {
                       throw new Error(
@@ -728,7 +716,7 @@ module.exports = {
                     const { id: userId } = ctx.state.user;
 
                     try {
-                      const cart = await strapi.db
+                      let cart = await strapi.db
                         .query("api::cart.cart")
                         .findOne({
                           where: { users_permissions_user: userId },
@@ -736,25 +724,50 @@ module.exports = {
                         });
 
                       if (!cart) {
-                        throw new Error("Cart not found");
+                        // Создаем корзину, если она не существует
+                        cart = await strapi.entityService.create(
+                          "api::cart.cart",
+                          {
+                            data: {
+                              users_permissions_user: userId,
+                              publishedAt: new Date().toISOString(),
+                            },
+                          }
+                        );
                       }
 
-                      const cartItem = cart.cart_items.find(
+                      const existingCartItem = cart.cart_items.find(
                         (item) =>
                           item.product.id.toString() === productId.toString()
                       );
 
-                      if (!cartItem) {
-                        throw new Error("Cart item not found");
-                      }
+                      if (existingCartItem) {
+                        const newQuantity = Math.max(
+                          1,
+                          existingCartItem.quantity + qtyChange
+                        );
 
-                      await strapi.entityService.update(
-                        "api::cart-item.cart-item",
-                        cartItem.id,
-                        {
-                          data: { quantity: Math.max(1, quantity) },
-                        }
-                      );
+                        await strapi.entityService.update(
+                          "api::cart-item.cart-item",
+                          existingCartItem.id,
+                          {
+                            data: { quantity: newQuantity },
+                          }
+                        );
+                      } else {
+                        // Добавляем новый товар
+                        await strapi.entityService.create(
+                          "api::cart-item.cart-item",
+                          {
+                            data: {
+                              product: productId,
+                              quantity: Math.max(1, qtyChange),
+                              cart: cart.id,
+                              publishedAt: new Date().toISOString(),
+                            },
+                          }
+                        );
+                      }
 
                       const updatedCart = await strapi.entityService.findOne(
                         "api::cart.cart",
@@ -769,9 +782,9 @@ module.exports = {
 
                       return { cart: updatedCart };
                     } catch (error) {
-                      console.error("Error updating cart item:", error);
+                      console.error("Error updating cart:", error);
                       throw new Error(
-                        "An error occurred while updating the cart item"
+                        "An error occurred while updating the cart"
                       );
                     }
                   },
@@ -836,6 +849,62 @@ module.exports = {
                       console.error("Error removing from cart:", error);
                       throw new Error(
                         "An error occurred while removing from the cart"
+                      );
+                    }
+                  },
+                });
+                t.field("clearCart", {
+                  type: "CartResponse",
+                  resolve: async (_, __, ctx) => {
+                    const { state } = ctx;
+
+                    if (!state.isAuthenticated) {
+                      throw new Error(
+                        "You must be logged in to modify your cart"
+                      );
+                    }
+
+                    const { id: userId } = ctx.state.user;
+
+                    try {
+                      const cart = await strapi.db
+                        .query("api::cart.cart")
+                        .findOne({
+                          where: { users_permissions_user: userId },
+                          populate: ["cart_items"],
+                        });
+
+                      if (!cart) {
+                        throw new Error("Cart not found");
+                      }
+
+                      // Delete all cart items
+                      await Promise.all(
+                        cart.cart_items.map((item) =>
+                          strapi.entityService.delete(
+                            "api::cart-item.cart-item",
+                            item.id
+                          )
+                        )
+                      );
+
+                      // Fetch the updated cart
+                      const updatedCart = await strapi.entityService.findOne(
+                        "api::cart.cart",
+                        cart.id,
+                        {
+                          populate: [
+                            "cart_items.product",
+                            "users_permissions_user",
+                          ],
+                        }
+                      );
+
+                      return { cart: updatedCart };
+                    } catch (error) {
+                      console.error("Error clearing cart:", error);
+                      throw new Error(
+                        "An error occurred while clearing the cart"
                       );
                     }
                   },
