@@ -186,18 +186,18 @@ module.exports = {
                       );
 
                       const queryFilters = {
-                        subcategory: {
-                          id: {
-                            $eq: subcategoryId,
+                        product_types: {
+                          subcategories: {
+                            id: {
+                              $eq: subcategoryId,
+                            },
                           },
                         },
                       };
 
                       if (productTypeId) {
-                        queryFilters.product_types = {
-                          id: {
-                            $in: [productTypeId],
-                          },
+                        queryFilters.product_types.id = {
+                          $eq: productTypeId,
                         };
                       }
 
@@ -206,6 +206,9 @@ module.exports = {
                         populate: {
                           params: {
                             fields: ["key", "value"],
+                          },
+                          product_types: {
+                            populate: ["subcategories"],
                           },
                         },
                         pagination: {
@@ -304,26 +307,25 @@ module.exports = {
 
                     let query = knex("products")
                       .join(
-                        "products_subcategory_links",
+                        "product_types_products_links",
                         "products.id",
-                        "products_subcategory_links.product_id"
+                        "product_types_products_links.product_id"
+                      )
+                      .join(
+                        "product_types_subcategories_links",
+                        "product_types_products_links.product_type_id",
+                        "product_types_subcategories_links.product_type_id"
                       )
                       .where(
-                        "products_subcategory_links.subcategory_id",
+                        "product_types_subcategories_links.subcategory_id",
                         subcategoryId
                       );
 
                     if (productTypeId) {
-                      query = query
-                        .join(
-                          "product_types_products_links",
-                          "products.id",
-                          "product_types_products_links.product_id"
-                        )
-                        .where(
-                          "product_types_products_links.product_type_id",
-                          productTypeId
-                        );
+                      query = query.where(
+                        "product_types_products_links.product_type_id",
+                        productTypeId
+                      );
                     }
 
                     if (filters && filters.length > 0) {
@@ -1150,6 +1152,44 @@ module.exports = {
     } else {
       logToFile(
         "Composite index already exists on products_subcategory_links (product_id, subcategory_id)"
+      );
+    }
+
+    const categoriesSubcategoriesLinkIndexExists = await knex.raw(`
+    SELECT 1
+    FROM pg_indexes
+    WHERE indexname = 'idx_subcategories_categories_links'
+  `);
+    if (categoriesSubcategoriesLinkIndexExists.rows.length === 0) {
+      await knex.raw(`
+      CREATE INDEX idx_subcategories_categories_links 
+      ON subcategories_categories_links (category_id, subcategory_id)
+    `);
+      logToFile(
+        "Composite index created on subcategories_categories_links (category_id, subcategory_id)"
+      );
+    } else {
+      logToFile(
+        "Composite index already exists on subcategories_categories_links (category_id, subcategory_id)"
+      );
+    }
+
+    const productTypesSubcategoriesLinkIndexExists = await knex.raw(`
+    SELECT 1
+    FROM pg_indexes
+    WHERE indexname = 'idx_product_types_subcategories_links'
+  `);
+    if (productTypesSubcategoriesLinkIndexExists.rows.length === 0) {
+      await knex.raw(`
+      CREATE INDEX idx_product_types_subcategories_links 
+      ON product_types_subcategories_links (product_type_id, subcategory_id)
+    `);
+      logToFile(
+        "Composite index created on product_types_subcategories_links (product_type_id, subcategory_id)"
+      );
+    } else {
+      logToFile(
+        "Composite index already exists on product_types_subcategories_links (product_type_id, subcategory_id)"
       );
     }
 

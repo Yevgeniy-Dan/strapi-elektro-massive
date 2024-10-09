@@ -19,12 +19,6 @@
       "minLength": 1,
       "unique": true
     },
-    "subcategories": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::subcategory.subcategory",
-      "mappedBy": "category"
-    },
     "icon": {
       "type": "media",
       "multiple": false,
@@ -45,6 +39,12 @@
       "type": "media",
       "multiple": false,
       "required": true
+    },
+    "subcategories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::subcategory.subcategory",
+      "mappedBy": "categories"
     }
   }
 }

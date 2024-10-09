@@ -966,14 +966,14 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
         minLength: 1;
         maxLength: 100;
       }>;
-    subcategories: Attribute.Relation<
-      'api::category.category',
-      'oneToMany',
-      'api::subcategory.subcategory'
-    >;
     icon: Attribute.Media<'images'>;
     slug: Attribute.String & Attribute.Required & Attribute.Unique;
     image: Attribute.Media<'images'> & Attribute.Required;
+    subcategories: Attribute.Relation<
+      'api::category.category',
+      'manyToMany',
+      'api::subcategory.subcategory'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1282,9 +1282,9 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    category: Attribute.Relation<
+    categories: Attribute.Relation<
       'api::subcategory.subcategory',
-      'manyToOne',
+      'manyToMany',
       'api::category.category'
     >;
     icon: Attribute.Media<'images'>;

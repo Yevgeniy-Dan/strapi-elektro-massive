@@ -12,9 +12,9 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "category": {
+    "categories": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::category.category",
       "inversedBy": "subcategories"
     },
