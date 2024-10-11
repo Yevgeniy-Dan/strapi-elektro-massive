@@ -704,7 +704,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
         minLength: 3;
       }>;
     email: Attribute.Email &
-      Attribute.Required &
       Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
@@ -738,6 +737,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::favorite-product.favorite-product'
     >;
+    phone: Attribute.String & Attribute.Unique;
+    token: Attribute.String;
+    otpGeneratedAt: Attribute.DateTime;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
