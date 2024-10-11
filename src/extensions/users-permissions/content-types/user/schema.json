@@ -23,7 +23,7 @@
       "type": "email",
       "minLength": 6,
       "configurable": false,
-      "required": true
+      "required": false
     },
     "provider": {
       "type": "string",
@@ -34,7 +34,8 @@
       "minLength": 6,
       "configurable": false,
       "private": true,
-      "searchable": false
+      "searchable": false,
+      "required:": false
     },
     "resetPasswordToken": {
       "type": "string",
@@ -82,6 +83,16 @@
       "relation": "oneToMany",
       "target": "api::favorite-product.favorite-product",
       "mappedBy": "users_permissions_user"
+    },
+    "phone": {
+      "type": "string",
+      "unique": true
+    },
+    "token": {
+      "type": "string"
+    },
+    "otpGeneratedAt": {
+      "type": "datetime"
     }
   }
 }
