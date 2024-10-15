@@ -844,6 +844,7 @@ export interface ApiBrandBrand extends Schema.CollectionType {
     singularName: 'brand';
     pluralName: 'brands';
     displayName: 'Brand';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1101,13 +1102,52 @@ export interface ApiProductProduct extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
-    title: Attribute.String & Attribute.Required & Attribute.Unique;
-    part_number: Attribute.String & Attribute.Required;
-    retail: Attribute.Decimal & Attribute.Required;
-    image_link: Attribute.String;
-    currency: Attribute.String & Attribute.Required;
-    additional_images: Attribute.Component<'images.images', true>;
+    title: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    part_number: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    retail: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    image_link: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    currency: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    additional_images: Attribute.Component<'images.images', true> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     product_types: Attribute.Relation<
       'api::product.product',
       'manyToMany',
@@ -1118,17 +1158,44 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'oneToOne',
       'api::subcategory.subcategory'
     >;
-    params: Attribute.JSON;
-    description: Attribute.RichText;
-    discount: Attribute.Decimal;
+    params: Attribute.JSON &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    description: Attribute.RichText &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    discount: Attribute.Decimal &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     cart_items: Attribute.Relation<
       'api::product.product',
       'oneToMany',
       'api::cart-item.cart-item'
     >;
-    slug: Attribute.String & Attribute.Required & Attribute.Unique;
-    keywords: Attribute.Text;
-    salesCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    slug: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    salesCount: Attribute.Integer &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<0>;
     favorite_products: Attribute.Relation<
       'api::product.product',
       'oneToMany',
@@ -1149,6 +1216,12 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::product.product',
+      'oneToMany',
+      'api::product.product'
+    >;
+    locale: Attribute.String;
   };
 }
 
