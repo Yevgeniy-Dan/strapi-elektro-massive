@@ -722,11 +722,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.role'
     >;
-    cart: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::cart.cart'
-    >;
     orders: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -881,6 +876,11 @@ export interface ApiCartCart extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
     users_permissions_user: Attribute.Relation<
       'api::cart.cart',
@@ -899,6 +899,12 @@ export interface ApiCartCart extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::cart.cart', 'oneToOne', 'admin::user'> &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::cart.cart',
+      'oneToMany',
+      'api::cart.cart'
+    >;
+    locale: Attribute.String;
   };
 }
 
@@ -913,8 +919,18 @@ export interface ApiCartItemCartItem extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
     quantity: Attribute.Integer &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
       Attribute.SetMinMax<
         {
           min: 1;
@@ -947,6 +963,12 @@ export interface ApiCartItemCartItem extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::cart-item.cart-item',
+      'oneToMany',
+      'api::cart-item.cart-item'
+    >;
+    locale: Attribute.String;
   };
 }
 
