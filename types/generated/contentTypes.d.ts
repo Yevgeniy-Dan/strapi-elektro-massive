@@ -1024,9 +1024,15 @@ export interface ApiFavoriteProductFavoriteProduct
     singularName: 'favorite-product';
     pluralName: 'favorite-products';
     displayName: 'FavoriteProduct';
+    description: '';
   };
   options: {
     draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
   };
   attributes: {
     users_permissions_user: Attribute.Relation<
@@ -1059,6 +1065,12 @@ export interface ApiFavoriteProductFavoriteProduct
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::favorite-product.favorite-product',
+      'oneToMany',
+      'api::favorite-product.favorite-product'
+    >;
+    locale: Attribute.String;
   };
 }
 

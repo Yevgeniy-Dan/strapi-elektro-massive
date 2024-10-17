@@ -4,12 +4,17 @@
   "info": {
     "singularName": "favorite-product",
     "pluralName": "favorite-products",
-    "displayName": "FavoriteProduct"
+    "displayName": "FavoriteProduct",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
     "users_permissions_user": {
       "type": "relation",

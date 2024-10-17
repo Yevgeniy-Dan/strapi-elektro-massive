@@ -396,7 +396,12 @@ module.exports = {
               definition(t) {
                 t.field("userFavorites", {
                   type: "FavoriteProductResponse",
-                  resolve: async (_, __, ctx) => {
+                  args: {
+                    locale: nexus.arg({
+                      type: nexus.nonNull("I18NLocaleCode"),
+                    }),
+                  },
+                  resolve: async (_, { locale }, ctx) => {
                     const { state } = ctx;
 
                     if (!state.isAuthenticated) {
@@ -410,7 +415,10 @@ module.exports = {
                     const favoriteProducts = await strapi.db
                       .query("api::favorite-product.favorite-product")
                       .findMany({
-                        where: { users_permissions_user: userId },
+                        where: {
+                          users_permissions_user: userId,
+                          locale: locale,
+                        },
                         populate: {
                           product: {
                             populate: ["image", "subcategory"],
@@ -942,8 +950,11 @@ module.exports = {
                     input: nexus.arg({
                       type: nexus.nonNull("AddToFavoritesInput"),
                     }),
+                    locale: nexus.arg({
+                      type: nexus.nonNull("I18NLocaleCode"),
+                    }),
                   },
-                  resolve: async (_, { input }, ctx) => {
+                  resolve: async (_, { input, locale }, ctx) => {
                     const { state } = ctx;
                     const { productId, productTypeId } = input;
 
@@ -956,37 +967,66 @@ module.exports = {
                     const { id: userId } = ctx.state.user;
 
                     try {
-                      const existingFavorite = await strapi.db
-                        .query("api::favorite-product.favorite-product")
-                        .findOne({
-                          where: {
-                            users_permissions_user: userId,
-                            product: productId,
-                          },
-                        });
+                      const locales = ["uk", "ru"];
+                      for (const currentLocale of locales) {
+                        const product = await strapi.entityService.findOne(
+                          "api::product.product",
+                          productId,
+                          { populate: ["localizations"] }
+                        );
 
-                      if (existingFavorite) {
-                        throw new Error(
-                          "This product is already in your favorites"
+                        const localizedProductId =
+                          currentLocale === locale
+                            ? productId
+                            : product.localizations.find(
+                                (loc) => loc.locale === currentLocale
+                              )?.id;
+
+                        if (!localizedProductId) {
+                          console.error(
+                            `Localized product not found for locale: ${currentLocale}`
+                          );
+                          continue;
+                        }
+
+                        const existingFavorite = await strapi.db
+                          .query("api::favorite-product.favorite-product")
+                          .findOne({
+                            where: {
+                              users_permissions_user: userId,
+                              product: localizedProductId,
+                              locale: currentLocale,
+                            },
+                          });
+
+                        if (existingFavorite) {
+                          console.log(
+                            `Product already in favorites for locale: ${currentLocale}`
+                          );
+                          continue;
+                        }
+
+                        await strapi.entityService.create(
+                          "api::favorite-product.favorite-product",
+                          {
+                            data: {
+                              product: localizedProductId,
+                              product_type: productTypeId,
+                              users_permissions_user: userId,
+                              locale: currentLocale,
+                              publishedAt: new Date().toISOString(),
+                            },
+                          }
                         );
                       }
-
-                      await strapi.entityService.create(
-                        "api::favorite-product.favorite-product",
-                        {
-                          data: {
-                            product: productId,
-                            product_type: productTypeId,
-                            users_permissions_user: userId,
-                            publishedAt: new Date().toISOString(),
-                          },
-                        }
-                      );
 
                       const updatedFavorites = await strapi.db
                         .query("api::favorite-product.favorite-product")
                         .findMany({
-                          where: { users_permissions_user: userId },
+                          where: {
+                            users_permissions_user: userId,
+                            locale: locale,
+                          },
                           populate: {
                             product: {
                               populate: ["image", "subcategory"],
@@ -1011,8 +1051,11 @@ module.exports = {
                     input: nexus.arg({
                       type: nexus.nonNull("RemoveFromFavoritesInput"),
                     }),
+                    locale: nexus.arg({
+                      type: nexus.nonNull("I18NLocaleCode"),
+                    }),
                   },
-                  resolve: async (_, { input }, ctx) => {
+                  resolve: async (_, { input, locale }, ctx) => {
                     const { state } = ctx;
                     const { productId } = input;
 
@@ -1025,28 +1068,53 @@ module.exports = {
                     const { id: userId } = ctx.state.user;
 
                     try {
-                      const favoriteToRemove = await strapi.db
-                        .query("api::favorite-product.favorite-product")
-                        .findOne({
-                          where: {
-                            product: productId,
-                            users_permissions_user: userId,
-                          },
-                        });
+                      const locales = ["uk", "ru"];
+                      for (const currentLocale of locales) {
+                        const product = await strapi.entityService.findOne(
+                          "api::product.product",
+                          productId,
+                          { populate: ["localizations"] }
+                        );
 
-                      if (!favoriteToRemove) {
-                        throw new Error("Favorite product not found");
+                        const localizedProductId =
+                          currentLocale === locale
+                            ? productId
+                            : product.localizations.find(
+                                (loc) => loc.locale === currentLocale
+                              )?.id;
+
+                        if (!localizedProductId) {
+                          console.error(
+                            `Localized product not found for locale: ${currentLocale}`
+                          );
+                          continue;
+                        }
+
+                        const favoriteToRemove = await strapi.db
+                          .query("api::favorite-product.favorite-product")
+                          .findOne({
+                            where: {
+                              product: localizedProductId,
+                              users_permissions_user: userId,
+                              locale: currentLocale,
+                            },
+                          });
+
+                        if (favoriteToRemove) {
+                          await strapi.entityService.delete(
+                            "api::favorite-product.favorite-product",
+                            favoriteToRemove.id
+                          );
+                        }
                       }
-
-                      await strapi.entityService.delete(
-                        "api::favorite-product.favorite-product",
-                        favoriteToRemove.id
-                      );
 
                       const updatedFavorites = await strapi.db
                         .query("api::favorite-product.favorite-product")
                         .findMany({
-                          where: { users_permissions_user: userId },
+                          where: {
+                            users_permissions_user: userId,
+                            locale: locale,
+                          },
                           populate: {
                             product: {
                               populate: ["image", "subcategory"],
