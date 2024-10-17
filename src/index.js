@@ -287,6 +287,9 @@ module.exports = {
                     pageSize: nexus.intArg({
                       defaultValue: 25,
                     }),
+                    locale: nexus.arg({
+                      type: nexus.nonNull("I18NLocaleCode"),
+                    }),
                   },
                   resolve: async (_, args, ctx) => {
                     const {
@@ -296,6 +299,7 @@ module.exports = {
                       cursor,
                       page,
                       pageSize = 25,
+                      locale,
                     } = args;
 
                     // Check API token permissions
@@ -319,7 +323,8 @@ module.exports = {
                       .where(
                         "product_types_subcategories_links.subcategory_id",
                         subcategoryId
-                      );
+                      )
+                      .where("products.locale", locale);
 
                     if (productTypeId) {
                       query = query.where(
