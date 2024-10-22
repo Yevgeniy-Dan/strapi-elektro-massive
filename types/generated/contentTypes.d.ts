@@ -983,17 +983,44 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
     name: Attribute.String &
       Attribute.Required &
-      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
       Attribute.SetMinMaxLength<{
         minLength: 1;
         maxLength: 100;
       }>;
-    icon: Attribute.Media<'images'>;
-    slug: Attribute.String & Attribute.Required & Attribute.Unique;
-    image: Attribute.Media<'images'> & Attribute.Required;
+    icon: Attribute.Media<'images'> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    slug: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    image: Attribute.Media<'images'> &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     subcategories: Attribute.Relation<
       'api::category.category',
       'manyToMany',
@@ -1014,6 +1041,12 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::category.category',
+      'oneToMany',
+      'api::category.category'
+    >;
+    locale: Attribute.String;
   };
 }
 
@@ -1270,8 +1303,19 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
-    title: Attribute.String & Attribute.Required & Attribute.Unique;
+    title: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     products: Attribute.Relation<
       'api::product-type.product-type',
       'manyToMany',
@@ -1282,9 +1326,27 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
       'manyToMany',
       'api::subcategory.subcategory'
     >;
-    slug: Attribute.String & Attribute.Required & Attribute.Unique;
-    icon: Attribute.Media<'images'> & Attribute.Required;
-    description: Attribute.RichText;
+    slug: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    icon: Attribute.Media<'images'> &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    description: Attribute.RichText &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1300,6 +1362,12 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::product-type.product-type',
+      'oneToMany',
+      'api::product-type.product-type'
+    >;
+    locale: Attribute.String;
   };
 }
 
@@ -1390,15 +1458,38 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
     categories: Attribute.Relation<
       'api::subcategory.subcategory',
       'manyToMany',
       'api::category.category'
     >;
-    icon: Attribute.Media<'images'>;
-    title: Attribute.String & Attribute.Required & Attribute.Unique;
-    slug: Attribute.String & Attribute.Required & Attribute.Unique;
+    icon: Attribute.Media<'images'> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    title: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    slug: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     product_types: Attribute.Relation<
       'api::subcategory.subcategory',
       'manyToMany',
@@ -1419,6 +1510,12 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::subcategory.subcategory',
+      'oneToMany',
+      'api::subcategory.subcategory'
+    >;
+    locale: Attribute.String;
   };
 }
 

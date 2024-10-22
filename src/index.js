@@ -171,10 +171,13 @@ module.exports = {
                   args: {
                     productTypeId: nexus.idArg(),
                     subcategoryId: nexus.nonNull(nexus.idArg()),
+                    locale: nexus.nonNull("I18NLocaleCode"),
                   },
-                  resolve: async (_, { productTypeId, subcategoryId }, ctx) => {
-                    // logToFile(`productTypeFilters called with id: ${id}`);
-
+                  resolve: async (
+                    _,
+                    { productTypeId, subcategoryId, locale },
+                    ctx
+                  ) => {
                     try {
                       // Check API token permissions
                       await strapi.auth.verify(ctx.state.auth, {
@@ -214,26 +217,41 @@ module.exports = {
                         pagination: {
                           limit: -1, //TODO: consider the pagination
                         },
+                        locale: locale,
                       });
 
-                      const allowedFilterKeys = [
-                        "Бренд",
-                        "Гарантія",
-                        "Колірна температура",
-                        "Кут розсіювання",
-                        "Напруга V",
-                        "Особливості",
-                        "Потужність",
-                        "Світловий потік Lm",
-                        "Тип цоколя",
-                        "Форма лампи",
-                      ];
+                      const allowedFilterKeys = {
+                        uk: [
+                          "Бренд",
+                          "Гарантія",
+                          "Колірна температура",
+                          "Кут розсіювання",
+                          "Напруга V",
+                          "Особливості",
+                          "Потужність",
+                          "Світловий потік Lm",
+                          "Тип цоколя",
+                          "Форма лампи",
+                        ],
+                        ru: [
+                          "Бренд",
+                          "Гарантийный термин",
+                          "Цветовая температура света",
+                          "Угол рассеяния",
+                          "Напряжение V",
+                          "Особенности",
+                          "Мощность",
+                          "Световой поток Lm",
+                          "Тип цоколя",
+                          "Форма лампы",
+                        ],
+                      };
 
                       const resultFilters = {};
                       products.results.forEach((product) => {
                         Object.entries(product.params).forEach(
                           ([key, value]) => {
-                            if (allowedFilterKeys.includes(key)) {
+                            if (allowedFilterKeys[locale].includes(key)) {
                               if (!resultFilters[key]) {
                                 resultFilters[key] = new Set();
                               }
@@ -261,9 +279,6 @@ module.exports = {
                         );
                       });
 
-                      // logToFile(
-                      //   `Generated filters: ${JSON.stringify(resultFilters)}`
-                      // );
                       return resultFilters;
                     } catch (error) {
                       logToFile(
