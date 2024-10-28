@@ -60,6 +60,14 @@
       "relation": "manyToMany",
       "target": "api::product-type.product-type",
       "mappedBy": "subcategories"
+    },
+    "description": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "richtext"
     }
   }
 }

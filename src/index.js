@@ -281,9 +281,9 @@ module.exports = {
 
                       return resultFilters;
                     } catch (error) {
-                      logToFile(
-                        `Error in productTypeFilters: ${error.message}`
-                      );
+                      // logToFile(
+                      //   `Error in productTypeFilters: ${error.message}`
+                      // );
                       throw error;
                     }
                   },
@@ -980,9 +980,9 @@ module.exports = {
                     }
 
                     const { id: userId } = ctx.state.user;
+                    const locales = ["uk", "ru"];
 
                     try {
-                      const locales = ["uk", "ru"];
                       for (const currentLocale of locales) {
                         const product = await strapi.entityService.findOne(
                           "api::product.product",
