@@ -199,8 +199,9 @@ module.exports = {
                       };
 
                       if (productTypeId) {
-                        queryFilters.product_types.id = {
-                          $eq: productTypeId,
+                        queryFilters.product_types = {
+                          ...queryFilters.product_types,
+                          id: { $eq: productTypeId },
                         };
                       }
 
