@@ -184,42 +184,40 @@ module.exports = {
                         scope: ["api::product.product.find"],
                       });
 
-                      const productService = strapi.service(
-                        "api::product.product"
-                      );
+                      const knex = strapi.db.connection;
 
-                      const queryFilters = {
-                        product_types: {
-                          subcategories: {
-                            id: {
-                              $eq: subcategoryId,
-                            },
-                          },
-                        },
-                      };
+                      let query = knex("products")
+                        .join(
+                          "product_types_products_links",
+                          "products.id",
+                          "product_types_products_links.product_id"
+                        )
+                        .join(
+                          "product_types_subcategories_links",
+                          "product_types_products_links.product_type_id",
+                          "product_types_subcategories_links.product_type_id"
+                        )
+                        .where({
+                          "product_types_subcategories_links.subcategory_id":
+                            subcategoryId,
+                          "products.locale": locale,
+                        });
 
                       if (productTypeId) {
-                        queryFilters.product_types = {
-                          ...queryFilters.product_types,
-                          id: { $eq: productTypeId },
-                        };
+                        query = query.where(
+                          "product_types_products_links.product_type_id",
+                          productTypeId
+                        );
                       }
 
-                      const products = await productService.find({
-                        filters: queryFilters,
-                        populate: {
-                          params: {
-                            fields: ["key", "value"],
-                          },
-                          product_types: {
-                            populate: ["subcategories"],
-                          },
-                        },
-                        pagination: {
-                          limit: -1, //TODO: consider the pagination
-                        },
-                        locale: locale,
-                      });
+                      const results = await query
+                        .select("products.params")
+                        .whereNotNull("products.params");
+
+                      console.log(
+                        "Query results:",
+                        JSON.stringify(results, null, 2)
+                      );
 
                       const allowedFilterKeys = {
                         uk: [
@@ -249,17 +247,19 @@ module.exports = {
                       };
 
                       const resultFilters = {};
-                      products.results.forEach((product) => {
-                        Object.entries(product.params).forEach(
-                          ([key, value]) => {
-                            if (allowedFilterKeys[locale].includes(key)) {
-                              if (!resultFilters[key]) {
-                                resultFilters[key] = new Set();
-                              }
-                              resultFilters[key].add(value);
+                      results.forEach((result) => {
+                        const params =
+                          typeof result.params === "string"
+                            ? JSON.parse(result.params)
+                            : result.params;
+                        Object.entries(params).forEach(([key, value]) => {
+                          if (allowedFilterKeys[locale].includes(key)) {
+                            if (!resultFilters[key]) {
+                              resultFilters[key] = new Set();
                             }
+                            resultFilters[key].add(value);
                           }
-                        );
+                        });
                       });
 
                       const sortMixedValues = (arr) => {
