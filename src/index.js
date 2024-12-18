@@ -306,6 +306,7 @@ module.exports = {
                     locale: nexus.arg({
                       type: nexus.nonNull("I18NLocaleCode"),
                     }),
+                    sort: nexus.list("String"),
                   },
                   resolve: async (_, args, ctx) => {
                     const {
@@ -316,6 +317,7 @@ module.exports = {
                       page,
                       pageSize = 25,
                       locale,
+                      sort,
                     } = args;
 
                     // Check API token permissions
@@ -373,9 +375,21 @@ module.exports = {
                       query = query.offset(offset);
                     }
 
+                    if (sort && sort.length > 0) {
+                      sort.forEach((sortItem) => {
+                        const [field, direction] = sortItem.split(":");
+
+                        if (field === "retail") {
+                          query = query.orderBy("products.retail", direction);
+                        }
+                      });
+                    } else {
+                      query = query.orderBy("products.id", "asc");
+                    }
+
                     const results = await query
                       .select("products.*")
-                      .orderBy("products.id", "asc")
+                      // .orderBy("products.id", "asc")
                       .limit(pageSize + 1);
 
                     const hasNextPage = results.length > pageSize;
