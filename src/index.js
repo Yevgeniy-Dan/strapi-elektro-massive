@@ -214,11 +214,6 @@ module.exports = {
                         .select("products.params")
                         .whereNotNull("products.params");
 
-                      console.log(
-                        "Query results:",
-                        JSON.stringify(results, null, 2)
-                      );
-
                       const allowedFilterKeys = {
                         uk: [
                           "Бренд",
@@ -307,6 +302,7 @@ module.exports = {
                       type: nexus.nonNull("I18NLocaleCode"),
                     }),
                     sort: nexus.list("String"),
+                    maxPrice: nexus.floatArg(),
                   },
                   resolve: async (_, args, ctx) => {
                     const {
@@ -318,6 +314,7 @@ module.exports = {
                       pageSize = 25,
                       locale,
                       sort,
+                      maxPrice,
                     } = args;
 
                     // Check API token permissions
@@ -343,6 +340,10 @@ module.exports = {
                         subcategoryId
                       )
                       .where("products.locale", locale);
+
+                    if (maxPrice) {
+                      query = query.where("products.retail", "<=", maxPrice);
+                    }
 
                     if (productTypeId) {
                       query = query.where(
@@ -416,6 +417,63 @@ module.exports = {
                       totalCount,
                       nextCursor,
                     };
+                  },
+                });
+
+                t.field("maxProductPrice", {
+                  type: "Float",
+                  args: {
+                    subcategoryId: nexus.nonNull(nexus.idArg()),
+                    productTypeId: nexus.idArg(),
+                    locale: nexus.arg({
+                      type: nexus.nonNull("I18NLocaleCode"),
+                    }),
+                  },
+                  resolve: async (
+                    _,
+                    { subcategoryId, productTypeId, locale },
+                    ctx
+                  ) => {
+                    console.log("maxProductPrice resolver called with:", {
+                      subcategoryId,
+                      productTypeId,
+                      locale,
+                    });
+
+                    const knex = strapi.db.connection;
+
+                    let query = knex("products")
+                      .join(
+                        "product_types_products_links",
+                        "products.id",
+                        "product_types_products_links.product_id"
+                      )
+                      .join(
+                        "product_types_subcategories_links",
+                        "product_types_products_links.product_type_id",
+                        "product_types_subcategories_links.product_type_id"
+                      )
+                      .where(
+                        "product_types_subcategories_links.subcategory_id",
+                        subcategoryId
+                      )
+                      .where("products.locale", locale);
+
+                    if (productTypeId) {
+                      query = query.where(
+                        "product_types_products_links.product_type_id",
+                        productTypeId
+                      );
+                    }
+
+                    console.log("SQL Query:", query.toString());
+
+                    const result = await query
+                      .max("products.retail as maxRetail")
+                      .first();
+
+                    console.log("Query result:", result);
+                    return result.maxRetail || 0;
                   },
                 });
               },
@@ -1172,6 +1230,11 @@ module.exports = {
               },
             },
             "Query.filteredProducts": {
+              auth: {
+                scope: ["api::product.product.find"],
+              },
+            },
+            "Query.maxProductPrice": {
               auth: {
                 scope: ["api::product.product.find"],
               },
