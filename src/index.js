@@ -302,6 +302,7 @@ module.exports = {
                       type: nexus.nonNull("I18NLocaleCode"),
                     }),
                     sort: nexus.list("String"),
+                    minPrice: nexus.floatArg(),
                     maxPrice: nexus.floatArg(),
                   },
                   resolve: async (_, args, ctx) => {
@@ -314,6 +315,7 @@ module.exports = {
                       pageSize = 25,
                       locale,
                       sort,
+                      minPrice,
                       maxPrice,
                     } = args;
 
@@ -340,6 +342,10 @@ module.exports = {
                         subcategoryId
                       )
                       .where("products.locale", locale);
+
+                    if (minPrice) {
+                      query = query.where("products.retail", ">=", minPrice);
+                    }
 
                     if (maxPrice) {
                       query = query.where("products.retail", "<=", maxPrice);
