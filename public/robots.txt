@@ -1,3 +1,7 @@
-# To prevent search engines from seeing the site altogether, uncomment the next two lines:
-# User-Agent: *
-# Disallow: /
+User-agent: *
+Allow: /
+Disallow: /ru/
+Disallow: /ru
+Disallow: /uk
+Disallow: /uk/
+Sitemap: https://elektromassivebucketproduction.s3.amazonaws.com/sitemap/sitemap.xml
