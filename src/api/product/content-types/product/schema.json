@@ -97,7 +97,8 @@
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "required": true
     },
     "discount": {
       "type": "decimal",

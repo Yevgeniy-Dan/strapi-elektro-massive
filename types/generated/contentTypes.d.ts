@@ -1096,6 +1096,13 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       'manyToMany',
       'api::subcategory.subcategory'
     >;
+    description: Attribute.Blocks &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1302,6 +1309,7 @@ export interface ApiProductProduct extends Schema.CollectionType {
         };
       }>;
     description: Attribute.RichText &
+      Attribute.Required &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -1412,6 +1420,7 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
         };
       }>;
     description: Attribute.RichText &
+      Attribute.Required &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -1566,6 +1575,7 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
       'api::product-type.product-type'
     >;
     description: Attribute.RichText &
+      Attribute.Required &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
