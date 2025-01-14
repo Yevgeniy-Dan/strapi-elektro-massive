@@ -1078,7 +1078,6 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
       }>;
     slug: Attribute.String &
       Attribute.Required &
-      Attribute.Unique &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -1328,7 +1327,6 @@ export interface ApiProductProduct extends Schema.CollectionType {
     >;
     slug: Attribute.String &
       Attribute.Required &
-      Attribute.Unique &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -1406,7 +1404,6 @@ export interface ApiProductTypeProductType extends Schema.CollectionType {
     >;
     slug: Attribute.String &
       Attribute.Required &
-      Attribute.Unique &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
@@ -1563,7 +1560,6 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
       }>;
     slug: Attribute.String &
       Attribute.Required &
-      Attribute.Unique &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;

@@ -117,7 +117,7 @@
     "slug": {
       "type": "string",
       "required": true,
-      "unique": true,
+      "unique": false,
       "pluginOptions": {
         "i18n": {
           "localized": true

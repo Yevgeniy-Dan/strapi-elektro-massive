@@ -1270,6 +1270,42 @@ module.exports = {
    */
   bootstrap: async ({ strapi }) => {
     const knex = strapi.db.connection;
+
+    const tables = ["products", "product_types", "categories", "subcategories"];
+
+    for (const table of tables) {
+      try {
+        const indexName = `unique_slug_locale_${table}`;
+
+        // Check if the index already exists
+        const indexExists = await knex.raw(
+          `
+          SELECT 1
+          FROM pg_indexes
+          WHERE indexname = ? AND tablename = ?
+        `,
+          [indexName, table]
+        );
+
+        if (indexExists.rows.length === 0) {
+          // Create the composite unique index with a table-specific name
+          await knex.raw(`
+            CREATE UNIQUE INDEX IF NOT EXISTS ${indexName}
+            ON ${table} (slug, locale)
+          `);
+          console.log(
+            `Created composite unique index on ${table} (slug, locale)`
+          );
+        } else {
+          console.log(
+            `Composite unique index already exists on ${table} (slug, locale)`
+          );
+        }
+      } catch (error) {
+        console.error(`Error creating index for ${table}:`, error);
+      }
+    }
+
     // Check if the index already exists
     const indexExists = await knex.raw(`
       SELECT 1
