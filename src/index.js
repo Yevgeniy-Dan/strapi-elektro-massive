@@ -1275,34 +1275,32 @@ module.exports = {
 
     for (const table of tables) {
       try {
-        const indexName = `unique_slug_locale_${table}`;
+        const constraintName = `unique_slug_locale_${table}`;
 
         // Check if the index already exists
-        const indexExists = await knex.raw(
+        const constraintExists = await knex.raw(
           `
           SELECT 1
-          FROM pg_indexes
-          WHERE indexname = ? AND tablename = ?
+          FROM pg_constraint
+          WHERE conname = ? AND conrelid = quote_ident(?)::regclass::oid
         `,
-          [indexName, table]
+          [constraintName, table]
         );
 
-        if (indexExists.rows.length === 0) {
-          // Create the composite unique index with a table-specific name
+        if (constraintExists.rows.length === 0) {
+          await knex.raw(`DROP INDEX IF EXISTS ${constraintName}`);
+
           await knex.raw(`
-            CREATE UNIQUE INDEX IF NOT EXISTS ${indexName}
-            ON ${table} (slug, locale)
+            ALTER TABLE ${table}
+            ADD CONSTRAINT ${constraintName}
+            UNIQUE (slug, locale)
           `);
-          console.log(
-            `Created composite unique index on ${table} (slug, locale)`
-          );
+          console.log(`Created unique constrain on ${table} (slug, locale)`);
         } else {
-          console.log(
-            `Composite unique index already exists on ${table} (slug, locale)`
-          );
+          console.log(`Constraint already exists on ${table} (slug, locale)`);
         }
       } catch (error) {
-        console.error(`Error creating index for ${table}:`, error);
+        console.error(`Error handling constraint for ${table}:`, error);
       }
     }
 
