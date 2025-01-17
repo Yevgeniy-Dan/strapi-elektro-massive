@@ -140,6 +140,15 @@
       "relation": "oneToMany",
       "target": "api::favorite-product.favorite-product",
       "mappedBy": "product"
+    },
+    "langMatches": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "json",
+      "required": false
     }
   }
 }
