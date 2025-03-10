@@ -48,6 +48,17 @@ const getProductTypeFilters = extendType({
             .select("products.params")
             .whereNotNull("products.params");
 
+          const filterKeyMappings = {
+            uk: {
+              "Світловий потік": "Світловий потік Lm",
+              "Світловий потік Lm": "Світловий потік Lm",
+            },
+            ru: {
+              "Световой поток": "Световой поток Lm",
+              "Световой поток Lm": "Световой поток Lm",
+            },
+          };
+
           const allowedFilterKeys = {
             uk: [
               "Бренд",
@@ -82,11 +93,16 @@ const getProductTypeFilters = extendType({
                 ? JSON.parse(result.params)
                 : result.params;
             Object.entries(params).forEach(([key, value]) => {
-              if (allowedFilterKeys[locale].includes(key)) {
-                if (!resultFilters[key]) {
-                  resultFilters[key] = new Set();
+              const normalizedKey =
+                filterKeyMappings[locale] && filterKeyMappings[locale][key]
+                  ? filterKeyMappings[locale][key]
+                  : key;
+
+              if (allowedFilterKeys[locale].includes(normalizedKey)) {
+                if (!resultFilters[normalizedKey]) {
+                  resultFilters[normalizedKey] = new Set();
                 }
-                resultFilters[key].add(value);
+                resultFilters[normalizedKey].add(value);
               }
             });
           });
@@ -197,12 +213,45 @@ const getFilteredProducts = extendType({
         }
 
         if (filters && filters.length > 0) {
+          const filterKeyMappings = {
+            uk: {
+              "Світловий потік": "Світловий потік Lm",
+              "Світловий потік Lm": "Світловий потік Lm",
+            },
+            ru: {
+              "Световой поток": "Световой поток Lm",
+              "Световой поток Lm": "Световой поток Lm",
+            },
+          };
+
           query = query.andWhere(function () {
             filters.forEach(({ key, value }) => {
-              this.orWhereRaw(
-                "params @> ?::jsonb",
-                JSON.stringify({ [key]: value })
-              );
+              const normalizedKey =
+                filterKeyMappings[locale] && filterKeyMappings[locale][key]
+                  ? filterKeyMappings[locale][key]
+                  : key;
+
+              const keysToCheck = Object.entries(
+                filterKeyMappings[locale] || {}
+              )
+                .filter(([_, mappedValue]) => mappedValue === normalizedKey)
+                .map(([originalKey, _]) => originalKey);
+
+              if (keysToCheck.length > 0) {
+                this.andWhere(function () {
+                  keysToCheck.forEach((keyVariant) => {
+                    this.orWhereRaw(
+                      "params @> ?::jsonb",
+                      JSON.stringify({ [keyVariant]: value })
+                    );
+                  });
+                });
+              } else {
+                this.orWhereRaw(
+                  "params @> ?::jsonb",
+                  JSON.stringify({ [key]: value })
+                );
+              }
             });
           });
         }
