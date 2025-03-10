@@ -50,13 +50,101 @@ module.exports = {
   },
 
   async afterCreate(event) {
+    const { result } = event;
+
+    /**
+     * Product afterCreate lifecycle hook
+     *
+     * This function handles copying relation fields (product_types and subcategory) when
+     * creating localized versions of products. It solves the issue where Strapi's "Fill in from another"
+     * functionality doesn't properly copy relation fields between localized content.
+     *
+     * The process works as follows:
+     * 1. If the newly created product is not in Ukrainian locale (our source of truth)
+     * 2. Find the Ukrainian version of this product from its localizations
+     * 3. For each product_type (many-to-many relation) in the Ukrainian version:
+     *    - Find its localized version matching the current product's locale
+     *    - Build an array of localized product_type IDs
+     * 4. For the subcategory (one-to-one relation):
+     *    - Find its localized version matching the current product's locale
+     * 5. Update the current product with these localized relation IDs
+     *
+     * This ensures that proper localized versions of relations are linked, accommodating
+     * Strapi's design where the same content has different IDs across locales.
+     */
+
+    const sourceLocale = "uk";
+
+    if (result.locale !== sourceLocale) {
+      try {
+        const ukrainianProduct = await strapi.db
+          .query("api::product.product")
+          .findOne({
+            where: {
+              locale: sourceLocale,
+              id: { $in: result.localizations?.map((l) => l.id) || [] },
+            },
+            populate: {
+              product_types: {
+                populate: ["localizations"],
+              },
+              subcategory: {
+                populate: ["localizations"],
+              },
+            },
+          });
+
+        if (ukrainianProduct) {
+          const relationsToUpdate = {};
+
+          if (
+            ukrainianProduct.product_types &&
+            ukrainianProduct.product_types.length > 0
+          ) {
+            const localizedProductTypeIds = [];
+
+            for (const productType of ukrainianProduct.product_types) {
+              const localizedProductType = productType.localizations?.find(
+                (loc) => loc.locale === result.locale
+              );
+
+              localizedProductTypeIds.push(localizedProductType?.id);
+            }
+
+            relationsToUpdate.product_types =
+              localizedProductTypeIds.filter(Boolean);
+          }
+
+          if (ukrainianProduct.subcategory) {
+            const localizedSubcategory =
+              ukrainianProduct.subcategory.localizations?.find(
+                (loc) => loc.locale === result.locale
+              );
+
+            relationsToUpdate.subcategory = localizedSubcategory?.id;
+          }
+
+          if (Object.keys(relationsToUpdate).length > 0) {
+            await strapi.db.query("api::product.product").update({
+              where: { id: result.id },
+              data: relationsToUpdate,
+            });
+
+            console.log(
+              `Localized relations copied to ${result.locale} version for product ${result.id}`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error copying relations from Ukrainian version:", error);
+      }
+    }
     // After creating a new product:
     // 1. We create a mapping of language codes to their respective slugs (updatedLangMatches)
     // 2. Start with the current product's language and slug
     // 3. Add slugs from all localized versions
     // 4. Finally, update ALL related product records (both the original and its translations)
     //    with this complete mapping, so each version knows how to find its siblings
-    const { result } = event;
 
     if (result.localizations) {
       const updatedLangMatches = {};
