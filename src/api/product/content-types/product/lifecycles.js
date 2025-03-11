@@ -167,6 +167,47 @@ module.exports = {
       });
     }
   },
+
+  async afterUpdate(event) {
+    const { result } = event;
+
+    const sourceLocale = "uk";
+
+    if (result.locale === sourceLocale) {
+      try {
+        const localizations = await strapi.db
+          .query("api::product.product")
+          .findMany({
+            where: {
+              id: { $in: result.localizations?.map((l) => l.id) || [] },
+            },
+          });
+
+        if (localizations && localizations.length > 0) {
+          await Promise.all(
+            localizations.map(async (localization) => {
+              await strapi.db.query("api::product.product").update({
+                where: { id: localization.id },
+                data: {
+                  retail: result.retail,
+                  discount: result.discount,
+                  currency: result.currency,
+                },
+              });
+              console.log(
+                `Price synchronized from Ukrainian to ${localization.locale} version for product ${localization.id}`
+              );
+            })
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error synchronizing prices from Ukrainian version:",
+          error
+        );
+      }
+    }
+  },
 };
 
 async function validateUniquesSlug(event) {
