@@ -1386,6 +1386,12 @@ export interface ApiProductProduct extends Schema.CollectionType {
           localized: false;
         };
       }>;
+    lastPriceUpdatedAt: Attribute.DateTime &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

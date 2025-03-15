@@ -12,6 +12,10 @@ module.exports = {
       };
       data.langMatches = langMatches;
     }
+
+    if (data.retail) {
+      data.lastPriceUpdatedAt = new Date();
+    }
   },
 
   async beforeUpdate(event) {
@@ -22,6 +26,23 @@ module.exports = {
     // and then add slugs from all other language versions. This way langMatches will contain
     // something like { "en": "phones", "uk": "telefony", "ru": "telefony" }
     const { data, where } = event.params;
+
+    // If the rettail field is changed, we update the lastPriceUpdatedAt field.
+    if (data.retail) {
+      const currentProduct = await strapi.db
+        .query("api::product.product")
+        .findOne({
+          where: { id: where.id },
+          select: ["retail", "discount"],
+        });
+
+      if (data.retail && data.retail !== currentProduct.retail) {
+        data.lastPriceUpdatedAt = new Date();
+        console.log(
+          `Price changed for product ${where.id}, updating lastPriceUpdatedAt`
+        );
+      }
+    }
 
     if (data.slug) {
       const product = await strapi.db.query("api::product.product").findOne({
@@ -186,17 +207,32 @@ module.exports = {
         if (localizations && localizations.length > 0) {
           await Promise.all(
             localizations.map(async (localization) => {
+              const priceChanged = localization.retail !== result.retail;
+
+              const updateData = {
+                retail: result.retail,
+                discount: result.discount,
+                currency: result.currency,
+              };
+
+              if (priceChanged) {
+                updateData.lastPriceUpdatedAt = result.lastPriceUpdatedAt;
+              }
+
               await strapi.db.query("api::product.product").update({
                 where: { id: localization.id },
-                data: {
-                  retail: result.retail,
-                  discount: result.discount,
-                  currency: result.currency,
-                },
+                data: updateData,
               });
-              console.log(
-                `Price synchronized from Ukrainian to ${localization.locale} version for product ${localization.id}`
-              );
+
+              if (priceChanged) {
+                console.log(
+                  `Price changed and synchronized from Ukrainian to ${localization.locale} version for product ${localization.id}`
+                );
+              } else {
+                console.log(
+                  `Price synchronized from Ukrainian to ${localization.locale} version for product ${localization.id} (no change)`
+                );
+              }
             })
           );
         }
