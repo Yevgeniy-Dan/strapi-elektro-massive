@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "url_filter_mappings",
+  "info": {
+    "singularName": "url-filter-mapping",
+    "pluralName": "url-filter-mappings",
+    "displayName": "URLFilterMapping"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "latin_key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "uk": {
+      "type": "string",
+      "required": true
+    },
+    "ru": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

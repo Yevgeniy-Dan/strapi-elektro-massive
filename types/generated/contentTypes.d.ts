@@ -1691,6 +1691,39 @@ export interface ApiSubcategorySubcategory extends Schema.CollectionType {
   };
 }
 
+export interface ApiUrlFilterMappingUrlFilterMapping
+  extends Schema.CollectionType {
+  collectionName: 'url_filter_mappings';
+  info: {
+    singularName: 'url-filter-mapping';
+    pluralName: 'url-filter-mappings';
+    displayName: 'URLFilterMapping';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    latin_key: Attribute.String & Attribute.Required & Attribute.Unique;
+    uk: Attribute.String & Attribute.Required;
+    ru: Attribute.String & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::url-filter-mapping.url-filter-mapping',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::url-filter-mapping.url-filter-mapping',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -1721,6 +1754,7 @@ declare module '@strapi/types' {
       'api::product-type.product-type': ApiProductTypeProductType;
       'api::shop-review.shop-review': ApiShopReviewShopReview;
       'api::subcategory.subcategory': ApiSubcategorySubcategory;
+      'api::url-filter-mapping.url-filter-mapping': ApiUrlFilterMappingUrlFilterMapping;
     }
   }
 }
