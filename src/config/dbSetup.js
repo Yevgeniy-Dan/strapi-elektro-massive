@@ -42,22 +42,6 @@ const setupDatabase = async (strapi) => {
     }
   }
 
-  // Check if the index already exists
-  const indexExists = await knex.raw(`
-      SELECT 1
-      FROM pg_indexes
-      WHERE indexname = 'idx_products_params'
-    `);
-  if (indexExists.rows.length === 0) {
-    // Create the index if it doesn't exist
-    await knex.raw(
-      "CREATE INDEX idx_products_params ON products USING GIN (params jsonb_path_ops)"
-    );
-    logToFile("GIN index created on products.params");
-  } else {
-    logToFile("GIN index already exists on products.params");
-  }
-
   // Check if the index on products.id already exists
   const idIndexExists = await knex.raw(`
     SELECT 1

@@ -1270,6 +1270,128 @@ export interface ApiOrderOrder extends Schema.CollectionType {
   };
 }
 
+export interface ApiParameterTypeParameterType extends Schema.CollectionType {
+  collectionName: 'parameter_types';
+  info: {
+    singularName: 'parameter-type';
+    pluralName: 'parameter-types';
+    displayName: 'ParameterType';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    name: Attribute.String &
+      Attribute.Required &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    slug: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    parameter_values: Attribute.Relation<
+      'api::parameter-type.parameter-type',
+      'oneToMany',
+      'api::parameter-value.parameter-value'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::parameter-type.parameter-type',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::parameter-type.parameter-type',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::parameter-type.parameter-type',
+      'oneToMany',
+      'api::parameter-type.parameter-type'
+    >;
+    locale: Attribute.String;
+  };
+}
+
+export interface ApiParameterValueParameterValue extends Schema.CollectionType {
+  collectionName: 'parameter_values';
+  info: {
+    singularName: 'parameter-value';
+    pluralName: 'parameter-values';
+    displayName: 'ParameterValue';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    value: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    code: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }>;
+    parameter_type: Attribute.Relation<
+      'api::parameter-value.parameter-value',
+      'manyToOne',
+      'api::parameter-type.parameter-type'
+    >;
+    product: Attribute.Relation<
+      'api::parameter-value.parameter-value',
+      'manyToOne',
+      'api::product.product'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::parameter-value.parameter-value',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::parameter-value.parameter-value',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::parameter-value.parameter-value',
+      'oneToMany',
+      'api::parameter-value.parameter-value'
+    >;
+    locale: Attribute.String;
+  };
+}
+
 export interface ApiProductProduct extends Schema.CollectionType {
   collectionName: 'products';
   info: {
@@ -1392,6 +1514,11 @@ export interface ApiProductProduct extends Schema.CollectionType {
           localized: true;
         };
       }>;
+    parameter_values: Attribute.Relation<
+      'api::product.product',
+      'oneToMany',
+      'api::parameter-value.parameter-value'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1750,6 +1877,8 @@ declare module '@strapi/types' {
       'api::category.category': ApiCategoryCategory;
       'api::favorite-product.favorite-product': ApiFavoriteProductFavoriteProduct;
       'api::order.order': ApiOrderOrder;
+      'api::parameter-type.parameter-type': ApiParameterTypeParameterType;
+      'api::parameter-value.parameter-value': ApiParameterValueParameterValue;
       'api::product.product': ApiProductProduct;
       'api::product-type.product-type': ApiProductTypeProductType;
       'api::shop-review.shop-review': ApiShopReviewShopReview;

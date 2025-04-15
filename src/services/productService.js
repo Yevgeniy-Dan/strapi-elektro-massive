@@ -44,20 +44,38 @@ const getProductTypeFilters = extendType({
             );
           }
 
-          const results = await query
-            .select("products.params")
-            .whereNotNull("products.params");
+          const productIds = await query.select("products.id");
 
-          const filterKeyMappings = {
-            uk: {
-              "Світловий потік": "Світловий потік Lm",
-              "Світловий потік Lm": "Світловий потік Lm",
-            },
-            ru: {
-              "Световой поток": "Световой поток Lm",
-              "Световой поток Lm": "Световой поток Lm",
-            },
-          };
+          if (!productIds.length) return {};
+
+          const parameterResults = await knex("parameter_types")
+            .join(
+              "parameter_values_parameter_type_links",
+              "parameter_types.id",
+              "parameter_values_parameter_type_links.parameter_type_id"
+            )
+            .join(
+              "parameter_values",
+              "parameter_values.id",
+              "parameter_values_parameter_type_links.parameter_value_id"
+            )
+            .join(
+              "parameter_values_product_links",
+              "parameter_values.id",
+              "parameter_values_product_links.parameter_value_id"
+            )
+            .whereIn(
+              "parameter_values_product_links.product_id",
+              productIds.map((p) => p.id)
+            )
+            .where("parameter_types.locale", locale)
+            .where("parameter_values.locale", locale)
+            .select([
+              "parameter_types.name as paramName",
+              "parameter_types.slug as paramSlug",
+              "parameter_values.value as paramValue",
+              "parameter_values.code as paramCode",
+            ]);
 
           const allowedFilterKeys = {
             uk: [
@@ -277,25 +295,21 @@ const getProductTypeFilters = extendType({
           };
 
           const resultFilters = {};
-          results.forEach((result) => {
-            const params =
-              typeof result.params === "string"
-                ? JSON.parse(result.params)
-                : result.params;
-            Object.entries(params).forEach(([key, value]) => {
-              const normalizedKey =
-                filterKeyMappings[locale] && filterKeyMappings[locale][key]
-                  ? filterKeyMappings[locale][key]
-                  : key;
-
-              if (allowedFilterKeys[locale].includes(normalizedKey)) {
-                if (!resultFilters[normalizedKey]) {
-                  resultFilters[normalizedKey] = new Set();
+          parameterResults.forEach(
+            ({ paramName, paramSlug, paramValue, paramCode }) => {
+              if (allowedFilterKeys[locale].includes(paramName)) {
+                if (!resultFilters[paramName]) {
+                  resultFilters[paramName] = {
+                    slug: paramSlug,
+                    values: new Set(),
+                    codes: {},
+                  };
                 }
-                resultFilters[normalizedKey].add(value);
+                resultFilters[paramName].values.add(paramValue);
+                resultFilters[paramName].codes[paramValue] = paramCode;
               }
-            });
-          });
+            }
+          );
 
           const sortMixedValues = (arr) => {
             return arr.sort((a, b) => {
@@ -310,9 +324,18 @@ const getProductTypeFilters = extendType({
           };
 
           Object.keys(resultFilters).forEach((key) => {
-            resultFilters[key] = sortMixedValues(
-              Array.from(resultFilters[key])
+            resultFilters[key].values = sortMixedValues(
+              Array.from(resultFilters[key].values)
             );
+
+            resultFilters[key].values = resultFilters[key].values.map(
+              (value) => ({
+                value,
+                code: resultFilters[key].codes[value] || null,
+              })
+            );
+
+            delete resultFilters[key].codes;
           });
 
           return resultFilters;
@@ -403,45 +426,39 @@ const getFilteredProducts = extendType({
         }
 
         if (filters && filters.length > 0) {
-          const filterKeyMappings = {
-            uk: {
-              "Світловий потік": "Світловий потік Lm",
-              "Світловий потік Lm": "Світловий потік Lm",
-            },
-            ru: {
-              "Световой поток": "Световой поток Lm",
-              "Световой поток Lm": "Световой поток Lm",
-            },
-          };
-
           query = query.andWhere(function () {
-            filters.forEach(({ key, value }) => {
-              const normalizedKey =
-                filterKeyMappings[locale] && filterKeyMappings[locale][key]
-                  ? filterKeyMappings[locale][key]
-                  : key;
-
-              const keysToCheck = Object.entries(
-                filterKeyMappings[locale] || {}
-              )
-                .filter(([_, mappedValue]) => mappedValue === normalizedKey)
-                .map(([originalKey, _]) => originalKey);
-
-              if (keysToCheck.length > 0) {
-                this.andWhere(function () {
-                  keysToCheck.forEach((keyVariant) => {
-                    this.orWhereRaw(
-                      "params @> ?::jsonb",
-                      JSON.stringify({ [keyVariant]: value })
+            filters.forEach(({ key, code }) => {
+              this.whereExists(function () {
+                this.select(1)
+                  .from("parameter_types")
+                  .join(
+                    "parameter_values_parameter_type_links",
+                    "parameter_types.id",
+                    "parameter_values_parameter_type_links.parameter_type_id"
+                  )
+                  .join(
+                    "parameter_values",
+                    "parameter_values.id",
+                    "parameter_values_parameter_type_links.parameter_value_id"
+                  )
+                  .join(
+                    "parameter_values_product_links",
+                    "parameter_values.id",
+                    "parameter_values_product_links.parameter_value_id"
+                  )
+                  .where(
+                    "parameter_values_product_links.product_id",
+                    knex.raw("products.id")
+                  )
+                  .where("parameter_types.locale", locale)
+                  .where("parameter_values.locale", locale)
+                  .where(function () {
+                    this.where("parameter_types.name", key).andWhere(
+                      "parameter_values.code",
+                      code
                     );
                   });
-                });
-              } else {
-                this.orWhereRaw(
-                  "params @> ?::jsonb",
-                  JSON.stringify({ [key]: value })
-                );
-              }
+              });
             });
           });
         }
@@ -473,7 +490,7 @@ const getFilteredProducts = extendType({
 
         const results = await query
           .select("products.*")
-          // .orderBy("products.id", "asc")
+          .groupBy("products.id")
           .limit(pageSize + 1);
 
         const hasNextPage = results.length > pageSize;

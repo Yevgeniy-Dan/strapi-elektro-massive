@@ -157,6 +157,12 @@
         }
       },
       "type": "datetime"
+    },
+    "parameter_values": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::parameter-value.parameter-value",
+      "mappedBy": "product"
     }
   }
 }

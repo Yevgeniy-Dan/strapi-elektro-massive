@@ -77,7 +77,7 @@ const FilterInput = inputObjectType({
   name: "FilterInput",
   definition(t) {
     t.nonNull.string("key");
-    t.nonNull.string("value");
+    t.nonNull.string("code");
   },
 });
 
