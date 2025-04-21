@@ -247,11 +247,11 @@ module.exports = {
 
               if (priceChanged) {
                 console.log(
-                  `Price changed and synchronized from Ukrainian to ${localization.locale} version for product ${localization.id}`
+                  `Price changed and synchronized from ${result.locale} to ${localization.locale} version for product ${localization.id}`
                 );
               } else {
                 console.log(
-                  `Price synchronized from Ukrainian to ${localization.locale} version for product ${localization.id} (no change)`
+                  `Price synchronized from ${result.locale} to ${localization.locale} version for product ${localization.id} (no change)`
                 );
               }
             })
@@ -259,9 +259,202 @@ module.exports = {
         }
       } catch (error) {
         console.error(
-          "Error synchronizing prices from Ukrainian version:",
+          "Error synchronizing prices between localizations:",
           error
         );
+      }
+
+      try {
+        // We receive an updated product with its localizations
+        const product = await strapi.db.query("api::product.product").findOne({
+          where: { id: result.id },
+          populate: ["localizations"],
+        });
+
+        if (
+          !product ||
+          !product.localizations ||
+          product.localizations.length === 0
+        ) {
+          return;
+        }
+
+        // We receive all localizations of the product
+        const localizationIds = product.localizations.map((l) => l.id);
+
+        // Get relationship information for the current product
+        // Use direct database query for efficiency
+        const knex = strapi.db.connection;
+
+        // 1. Synchronize subcategory
+        // Get the subcategory ID of the current product
+        const productSubcategoryResult = await knex(
+          "products_subcategory_links"
+        )
+          .select("subcategory_id")
+          .where("product_id", product.id)
+          .first();
+
+        if (
+          productSubcategoryResult &&
+          productSubcategoryResult.subcategory_id
+        ) {
+          const subcategoryId = productSubcategoryResult.subcategory_id;
+
+          const subcategoryLocalizations = await knex(
+            "subcategories_localizations_links"
+          )
+            .select(["subcategory_id", "inv_subcategory_id"])
+            .where("subcategory_id", subcategoryId)
+            .orWhere("inv_subcategory_id", subcategoryId);
+
+          // Create a set of all subcategory IDs (including localizations)
+          const allSubcategoryIds = new Set([subcategoryId]);
+          subcategoryLocalizations.forEach((link) => {
+            allSubcategoryIds.add(link.subcategory_id);
+            allSubcategoryIds.add(link.inv_subcategory_id);
+          });
+
+          // For each localization of the product, find the corresponding localization of the subcategory
+          for (const localizationId of localizationIds) {
+            // Get the locale of the product localization
+            const localizationResult = await knex("products")
+              .select("locale")
+              .where("id", localizationId)
+              .first();
+
+            if (localizationResult && localizationResult.locale) {
+              const locale = localizationResult.locale;
+
+              // Find the localization of the subcategory with the same locale
+              const localizedSubcategoryResult = await knex("subcategories")
+                .select("id")
+                .where("locale", locale)
+                .whereIn("id", Array.from(allSubcategoryIds))
+                .first();
+
+              if (localizedSubcategoryResult && localizedSubcategoryResult.id) {
+                await knex("products_subcategory_links")
+                  .where("product_id", localizationId)
+                  .del();
+
+                await knex("products_subcategory_links").insert({
+                  product_id: localizationId,
+                  subcategory_id: localizedSubcategoryResult.id,
+                });
+
+                console.log(
+                  `Updated subcategory for product localization ${localizationId}`
+                );
+              }
+            }
+          }
+        } else {
+          for (const localizationId of localizationIds) {
+            await knex("products_subcategory_links")
+              .where("product_id", localizationId)
+              .del();
+
+            console.log(
+              `Removed subcategory for product localization ${localizationId}`
+            );
+          }
+        }
+
+        // 2. Synchronize product_types
+        // Get the ID of the product types of the current product
+        const productTypesResult = await knex("product_types_products_links")
+          .select("product_type_id")
+          .where("product_id", product.id);
+
+        if (productTypesResult && productTypesResult.length > 0) {
+          const productTypeIds = productTypesResult.map(
+            (pt) => pt.product_type_id
+          );
+
+          // For each product type, get its localizations
+          const productTypeLocalizationsMap = {};
+
+          for (const productTypeId of productTypeIds) {
+            const typeLocalizations = await knex(
+              "product_types_localizations_links"
+            )
+              .select(["product_type_id", "inv_product_type_id"])
+              .where("product_type_id", productTypeId)
+              .orWhere("inv_product_type_id", productTypeId);
+
+            // Create a set of all IDs of this product type (including localizations)
+            const allTypeIds = new Set([productTypeId]);
+            typeLocalizations.forEach((link) => {
+              allTypeIds.add(link.product_type_id);
+              allTypeIds.add(link.inv_product_type_id);
+            });
+
+            productTypeLocalizationsMap[productTypeId] = Array.from(allTypeIds);
+          }
+
+          // For each localization of the product
+          for (const localizationId of localizationIds) {
+            // Get the locale of the product localization
+            const localizationResult = await knex("products")
+              .select("locale")
+              .where("id", localizationId)
+              .first();
+
+            if (localizationResult && localizationResult.locale) {
+              const locale = localizationResult.locale;
+
+              // First, delete all existing relationships with product types
+              await knex("product_types_products_links")
+                .where("product_id", localizationId)
+                .del();
+
+              // For each product type, find its localization with the same locale
+              for (const productTypeId of productTypeIds) {
+                const allTypeIds =
+                  productTypeLocalizationsMap[productTypeId] || [];
+
+                const localizedProductTypeResult = await knex("product_types")
+                  .select("id")
+                  .where("locale", locale)
+                  .whereIn("id", allTypeIds)
+                  .first();
+
+                if (
+                  localizedProductTypeResult &&
+                  localizedProductTypeResult.id
+                ) {
+                  // Add a relationship between the product localization and the product type localization
+                  await knex("product_types_products_links").insert({
+                    product_id: localizationId,
+                    product_type_id: localizedProductTypeResult.id,
+                  });
+                }
+              }
+
+              console.log(
+                `Updated product_types for product localization ${localizationId}`
+              );
+            }
+          }
+        } else {
+          for (const localizationId of localizationIds) {
+            await knex("product_types_products_links")
+              .where("product_id", localizationId)
+              .del();
+
+            console.log(
+              `Removed product_types for product localization ${localizationId}`
+            );
+          }
+        }
+
+        console.log(
+          `Successfully synchronized all relations for product ${product.id}`
+        );
+      } catch (error) {
+        console.error("Error synchronizing relations:", error);
+        console.error(error.stack);
       }
     }
   },
