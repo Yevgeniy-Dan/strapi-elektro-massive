@@ -75,6 +75,14 @@
       },
       "type": "blocks",
       "required": true
+    },
+    "langMatches": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "json"
     }
   }
 }
