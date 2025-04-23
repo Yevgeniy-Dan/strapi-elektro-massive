@@ -24,7 +24,9 @@ module.exports = {
             },
             populate: {
               parameter_type: true,
-              product: true,
+              product_parameters: {
+                populate: ["product"],
+              },
             },
           });
 
@@ -48,22 +50,6 @@ module.exports = {
               }
             }
 
-            // Find localized product that matches the current localization's language
-            if (parameterValue.product) {
-              const localizedProduct = await strapi.db
-                .query("api::product.product")
-                .findOne({
-                  where: {
-                    locale: localization.locale,
-                    localizations: { id: parameterValue.product.id },
-                  },
-                });
-
-              if (localizedProduct) {
-                relationsToUpdate.product = localizedProduct.id;
-              }
-            }
-
             // Update relations if we found any to update
             if (Object.keys(relationsToUpdate).length > 0) {
               await strapi.db
@@ -76,6 +62,57 @@ module.exports = {
               console.log(
                 `Localized relations copied from Ukrainian version to ${localization.locale} version for parameter value ${localization.id}`
               );
+            }
+
+            // Handle product_parameters separately
+            if (
+              parameterValue.product_parameters &&
+              parameterValue.product_parameters.length > 0
+            ) {
+              // For each product_parameter associated with the Ukrainian parameter value
+              for (const productParameter of parameterValue.product_parameters) {
+                if (productParameter.product) {
+                  // Find localized product
+                  const localizedProduct = await strapi.db
+                    .query("api::product.product")
+                    .findOne({
+                      where: {
+                        locale: localization.locale,
+                        localizations: { id: productParameter.product.id },
+                      },
+                    });
+
+                  if (localizedProduct) {
+                    // Check if a product_parameter already exists for this combination
+                    const existingProductParameter = await strapi.db
+                      .query("api::product-parameter.product-parameter")
+                      .findOne({
+                        where: {
+                          parameter_value: localization.id,
+                          product: localizedProduct.id,
+                        },
+                      });
+
+                    if (!existingProductParameter) {
+                      // Create a new product_parameter for the localized parameter value and product
+                      await strapi.db
+                        .query("api::product-parameter.product-parameter")
+                        .create({
+                          data: {
+                            parameter_value: localization.id,
+                            product: localizedProduct.id,
+                            locale: localization.locale,
+                            publishedAt: new Date(),
+                          },
+                        });
+
+                      console.log(
+                        `Created product_parameter linking localized parameter value ${localization.id} to localized product ${localizedProduct.id}`
+                      );
+                    }
+                  }
+                }
+              }
             }
           }
         }

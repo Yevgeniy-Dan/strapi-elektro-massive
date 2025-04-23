@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_parameters",
+  "info": {
+    "singularName": "product-parameter",
+    "pluralName": "product-parameters",
+    "displayName": "ProductParameter ",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "product_parameters"
+    },
+    "parameter_value": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::parameter-value.parameter-value",
+      "inversedBy": "product_parameters"
+    }
+  }
+}

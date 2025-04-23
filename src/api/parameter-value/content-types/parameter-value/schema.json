@@ -39,11 +39,11 @@
       "target": "api::parameter-type.parameter-type",
       "inversedBy": "parameter_values"
     },
-    "product": {
+    "product_parameters": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::product.product",
-      "inversedBy": "parameter_values"
+      "relation": "oneToMany",
+      "target": "api::product-parameter.product-parameter",
+      "mappedBy": "parameter_value"
     }
   }
 }

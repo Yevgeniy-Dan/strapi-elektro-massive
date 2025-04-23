@@ -158,10 +158,10 @@
       },
       "type": "datetime"
     },
-    "parameter_values": {
+    "product_parameters": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::parameter-value.parameter-value",
+      "target": "api::product-parameter.product-parameter",
       "mappedBy": "product"
     }
   }

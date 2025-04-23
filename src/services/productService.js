@@ -60,12 +60,22 @@ const getProductTypeFilters = extendType({
               "parameter_values_parameter_type_links.parameter_value_id"
             )
             .join(
-              "parameter_values_product_links",
+              "product_parameters_parameter_value_links",
               "parameter_values.id",
-              "parameter_values_product_links.parameter_value_id"
+              "product_parameters_parameter_value_links.parameter_value_id"
+            )
+            .join(
+              "product_parameters",
+              "product_parameters.id",
+              "product_parameters_parameter_value_links.product_parameter_id"
+            )
+            .join(
+              "product_parameters_product_links",
+              "product_parameters.id",
+              "product_parameters_product_links.product_parameter_id"
             )
             .whereIn(
-              "parameter_values_product_links.product_id",
+              "product_parameters_product_links.product_id",
               productIds.map((p) => p.id)
             )
             .where("parameter_types.locale", locale)
@@ -442,12 +452,22 @@ const getFilteredProducts = extendType({
                     "parameter_values_parameter_type_links.parameter_value_id"
                   )
                   .join(
-                    "parameter_values_product_links",
+                    "product_parameters_parameter_value_links",
                     "parameter_values.id",
-                    "parameter_values_product_links.parameter_value_id"
+                    "product_parameters_parameter_value_links.parameter_value_id"
+                  )
+                  .join(
+                    "product_parameters",
+                    "product_parameters.id",
+                    "product_parameters_parameter_value_links.product_parameter_id"
+                  )
+                  .join(
+                    "product_parameters_product_links",
+                    "product_parameters.id",
+                    "product_parameters_product_links.product_parameter_id"
                   )
                   .where(
-                    "parameter_values_product_links.product_id",
+                    "product_parameters_product_links.product_id",
                     knex.raw("products.id")
                   )
                   .where("parameter_types.locale", locale)

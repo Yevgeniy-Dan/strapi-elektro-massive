@@ -1369,10 +1369,10 @@ export interface ApiParameterValueParameterValue extends Schema.CollectionType {
       'manyToOne',
       'api::parameter-type.parameter-type'
     >;
-    product: Attribute.Relation<
+    product_parameters: Attribute.Relation<
       'api::parameter-value.parameter-value',
-      'manyToOne',
-      'api::product.product'
+      'oneToMany',
+      'api::product-parameter.product-parameter'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1520,10 +1520,10 @@ export interface ApiProductProduct extends Schema.CollectionType {
           localized: true;
         };
       }>;
-    parameter_values: Attribute.Relation<
+    product_parameters: Attribute.Relation<
       'api::product.product',
       'oneToMany',
-      'api::parameter-value.parameter-value'
+      'api::product-parameter.product-parameter'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1544,6 +1544,58 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'api::product.product',
       'oneToMany',
       'api::product.product'
+    >;
+    locale: Attribute.String;
+  };
+}
+
+export interface ApiProductParameterProductParameter
+  extends Schema.CollectionType {
+  collectionName: 'product_parameters';
+  info: {
+    singularName: 'product-parameter';
+    pluralName: 'product-parameters';
+    displayName: 'ProductParameter ';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    product: Attribute.Relation<
+      'api::product-parameter.product-parameter',
+      'manyToOne',
+      'api::product.product'
+    >;
+    parameter_value: Attribute.Relation<
+      'api::product-parameter.product-parameter',
+      'manyToOne',
+      'api::parameter-value.parameter-value'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::product-parameter.product-parameter',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::product-parameter.product-parameter',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::product-parameter.product-parameter',
+      'oneToMany',
+      'api::product-parameter.product-parameter'
     >;
     locale: Attribute.String;
   };
@@ -1886,6 +1938,7 @@ declare module '@strapi/types' {
       'api::parameter-type.parameter-type': ApiParameterTypeParameterType;
       'api::parameter-value.parameter-value': ApiParameterValueParameterValue;
       'api::product.product': ApiProductProduct;
+      'api::product-parameter.product-parameter': ApiProductParameterProductParameter;
       'api::product-type.product-type': ApiProductTypeProductType;
       'api::shop-review.shop-review': ApiShopReviewShopReview;
       'api::subcategory.subcategory': ApiSubcategorySubcategory;

@@ -7,6 +7,22 @@ module.exports = ({ env }) => ({
       maxLimit: 200,
       apolloServer: {
         tracing: true,
+        formatError: (error) => {
+          const { originalError } = error;
+
+          // If it is an ApplicationError, include additional data
+          if (originalError && originalError.data) {
+            return {
+              message: error.message,
+              extensions: {
+                ...error.extensions,
+                data: originalError.data,
+              },
+            };
+          }
+
+          return error;
+        },
       },
     },
   },
