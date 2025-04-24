@@ -72,4 +72,85 @@ module.exports = {
       );
     }
   },
+  afterCreate: async (event) => {
+    const { result } = event;
+
+    if (result.locale === "uk") {
+      const entry = await strapi.entityService.findOne(
+        "api::product-parameter.product-parameter",
+        result.id,
+        {
+          populate: ["product", "parameter_value", "localizations"],
+        }
+      );
+
+      const availableLocales = await strapi
+        .plugin("i18n")
+        .service("locales")
+        .find();
+
+      const locales = availableLocales
+        .filter((locale) => locale.code !== "uk")
+        .map((locale) => locale.code);
+
+      for (const locale of locales) {
+        try {
+          const localizationIds = [entry.id];
+          if (entry.localizations && entry.localizations.length > 0) {
+            entry.localizations.forEach((loc) => localizationIds.push(loc.id));
+          }
+
+          await strapi.entityService.create(
+            "api::product-parameter.product-parameter",
+            {
+              data: {
+                product: entry.product.id,
+                parameter_value: entry.parameter_value.id,
+                locale: locale,
+                localizations: localizationIds,
+              },
+            }
+          );
+        } catch (error) {
+          console.error(`Failed to create localization for ${locale}:`, error);
+        }
+      }
+    }
+  },
+
+  afterUpdate: async (event) => {
+    const { result } = event;
+
+    if (result.locale === "uk") {
+      const entry = await strapi.entityService.findOne(
+        "api::product-parameter.product-parameter",
+        result.id,
+        {
+          populate: ["product", "parameter_value", "localizations"],
+        }
+      );
+
+      if (entry.localizations && entry.localizations.length > 0) {
+        for (const localization of entry.localizations) {
+          try {
+            await strapi.entityService.update(
+              "api::product-parameter.product-parameter",
+              localization.id,
+              {
+                data: {
+                  product: entry.product.id,
+                  parameter_value: entry.parameter_value.id,
+                },
+              }
+            );
+          } catch (error) {
+            console.error(
+              `Failed to update localization ${localization.id}:`,
+              error
+            );
+          }
+        }
+      }
+    }
+  },
 };
