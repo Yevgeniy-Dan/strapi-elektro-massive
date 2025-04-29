@@ -106,13 +106,6 @@ module.exports = {
               id: { $in: result.localizations?.map((l) => l.id) || [] },
             },
             populate: {
-              product_parameters: {
-                populate: {
-                  parameter_value: {
-                    populate: ["localizations"],
-                  },
-                },
-              },
               product_types: {
                 populate: ["localizations"],
               },
@@ -152,27 +145,6 @@ module.exports = {
             relationsToUpdate.subcategory = localizedSubcategory?.id;
           }
 
-          if (
-            ukrainianProduct.product_parameters &&
-            ukrainianProduct.product_parameters.length > 0
-          ) {
-            const localizedProductParameters = [];
-
-            for (const productParameter of ukrainianProduct.product_parameters) {
-              const localizedParameterValue =
-                productParameter.parameter_value.localizations?.find(
-                  (val) => val.locale === result.locale
-                );
-
-              if (localizedParameterValue) {
-                localizedProductParameters.push({
-                  parameter_value: localizedParameterValue.id,
-                });
-              }
-            }
-
-            relationsToUpdate.product_parameters = localizedProductParameters;
-          }
           if (Object.keys(relationsToUpdate).length > 0) {
             await strapi.db.query("api::product.product").update({
               where: { id: result.id },
