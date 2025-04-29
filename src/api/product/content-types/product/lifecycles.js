@@ -211,6 +211,7 @@ module.exports = {
 
               const updateData = {
                 retail: result.retail,
+                in_stock: result.in_stock,
                 discount: result.discount,
                 currency: result.currency,
               };
@@ -223,16 +224,6 @@ module.exports = {
                 where: { id: localization.id },
                 data: updateData,
               });
-
-              if (priceChanged) {
-                console.log(
-                  `Price changed and synchronized from ${result.locale} to ${localization.locale} version for product ${localization.id}`
-                );
-              } else {
-                console.log(
-                  `Price synchronized from ${result.locale} to ${localization.locale} version for product ${localization.id} (no change)`
-                );
-              }
             })
           );
         }

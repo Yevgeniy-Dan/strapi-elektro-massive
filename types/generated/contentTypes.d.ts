@@ -1525,6 +1525,19 @@ export interface ApiProductProduct extends Schema.CollectionType {
       'oneToMany',
       'api::product-parameter.product-parameter'
     >;
+    in_stock: Attribute.Integer &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Attribute.DefaultTo<10>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

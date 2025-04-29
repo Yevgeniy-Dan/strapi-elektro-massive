@@ -163,6 +163,16 @@
       "relation": "oneToMany",
       "target": "api::product-parameter.product-parameter",
       "mappedBy": "product"
+    },
+    "in_stock": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "min": 0,
+      "default": 10,
+      "type": "integer"
     }
   }
 }
