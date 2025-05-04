@@ -22,7 +22,7 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "text"
     },
     "code": {
       "pluginOptions": {
@@ -30,7 +30,7 @@
           "localized": false
         }
       },
-      "type": "string",
+      "type": "text",
       "unique": false
     },
     "parameter_type": {

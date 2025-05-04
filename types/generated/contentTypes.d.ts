@@ -1352,13 +1352,13 @@ export interface ApiParameterValueParameterValue extends Schema.CollectionType {
     };
   };
   attributes: {
-    value: Attribute.String &
+    value: Attribute.Text &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;
         };
       }>;
-    code: Attribute.String &
+    code: Attribute.Text &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: false;
