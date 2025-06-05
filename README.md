@@ -59,3 +59,5 @@ Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/
 ---
 
 <sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+
+© 2025 Yevhenii Danoi. Licensed under the MIT License.
